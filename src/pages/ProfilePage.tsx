@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User, Save, CheckCircle2 } from "lucide-react";
 
 type Profile = {
@@ -30,15 +30,18 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Профиль</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Информация о себе</p>
-      </div>
+    <div className="page-shell">
+      <section className="page-hero mb-6">
+        <p className="page-kicker">Профиль ученика</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Личные настройки обучения</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+          Заполни базовую информацию о себе, чтобы интерфейс ощущался как персональный рабочий кабинет.
+        </p>
+      </section>
 
-      <div className="max-w-lg space-y-4">
-        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-lg">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
+      <div className="max-w-2xl space-y-5">
+        <div className="panel-surface flex items-center gap-4 p-5">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-primary/10">
             <User className="h-8 w-8 text-primary" />
           </div>
           <div>
@@ -47,49 +50,49 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-lg">
+        <div className="panel-surface space-y-4 p-5">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Имя</label>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">Имя</label>
             <input
               value={profile.name}
               onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
               placeholder="Как тебя зовут?"
-              className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+              className="w-full rounded-2xl border border-border bg-secondary/70 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
             />
           </div>
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Возраст</label>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">Возраст</label>
               <input
                 value={profile.age}
                 onChange={(e) => setProfile((p) => ({ ...p, age: e.target.value }))}
                 placeholder="14"
-                className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+                className="w-full rounded-2xl border border-border bg-secondary/70 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
               />
             </div>
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Класс</label>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">Класс</label>
               <input
                 value={profile.grade}
                 onChange={(e) => setProfile((p) => ({ ...p, grade: e.target.value }))}
                 placeholder="8"
-                className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+                className="w-full rounded-2xl border border-border bg-secondary/70 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
               />
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">О себе</label>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">О себе</label>
             <textarea
               value={profile.bio}
               onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
               placeholder="Что ты любишь изучать, твои цели…"
               rows={3}
-              className="w-full resize-none rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
+              className="w-full resize-none rounded-2xl border border-border bg-secondary/70 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
             />
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            className="flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
           >
             {saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {saved ? "Сохранено!" : "Сохранить"}

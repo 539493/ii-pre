@@ -21,21 +21,30 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 30% 20%, hsl(220 30% 14%) 0%, hsl(220 30% 8%) 60%, hsl(220 30% 5%) 100%)
+            radial-gradient(circle at 20% 15%, rgba(96, 165, 250, 0.16), transparent 28%),
+            radial-gradient(circle at 85% 12%, rgba(45, 212, 191, 0.1), transparent 22%),
+            linear-gradient(180deg, hsl(221 36% 13%) 0%, hsl(223 32% 10%) 100%)
           `,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        {/* Grid dots */}
-        <svg className="absolute inset-0 h-full w-full opacity-[0.06]">
+        <svg className="absolute inset-0 h-full w-full opacity-[0.08]">
           <defs>
-            <pattern id="grid-dots" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="1" fill="currentColor" />
+            <pattern id="grid-dots" width="36" height="36" patternUnits="userSpaceOnUse">
+              <circle cx="18" cy="18" r="1" fill="currentColor" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid-dots)" />
         </svg>
+        <svg className="absolute inset-0 h-full w-full opacity-[0.05]">
+          <defs>
+            <pattern id="grid-lines" width="90" height="90" patternUnits="userSpaceOnUse">
+              <path d="M 90 0 L 0 0 0 90" fill="none" stroke="currentColor" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-lines)" />
+        </svg>
 
-        {/* Arrows */}
         <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${BOARD_W} ${BOARD_H}`} preserveAspectRatio="xMidYMid meet">
           <defs>
             <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
@@ -73,6 +82,7 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
                   fontFamily: item.type === "formula" ? "'Courier New', monospace" : "inherit",
                   fontStyle: item.type === "formula" ? "italic" : "normal",
                   fontWeight: item.type === "text" ? 600 : 400,
+                  textShadow: "0 12px 30px rgba(15, 23, 42, 0.45)",
                   animationDelay: `${i * 0.15}s`,
                   opacity: 0,
                   whiteSpace: "nowrap",
@@ -93,9 +103,11 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
                   top: pctY(item.y),
                   width: item.width ? `${(item.width / BOARD_W) * 100}%` : "auto",
                   height: item.height ? `${(item.height / BOARD_H) * 100}%` : "auto",
-                  backgroundColor: item.color || "hsl(217 33% 14%)",
+                  backgroundColor: item.color || "rgba(15, 23, 42, 0.42)",
                   color: item.textColor || "#E2E8F0",
                   fontSize: "14px",
+                  boxShadow: "0 16px 40px -30px rgba(15, 23, 42, 0.8)",
+                  backdropFilter: "blur(16px)",
                   animationDelay: `${i * 0.15}s`,
                   opacity: 0,
                 }}
