@@ -190,11 +190,13 @@ export default function SubjectWorkspace() {
       }
 
       const testTitle = data?.test_title || "Тест";
-      const questionsCount = data?.questions?.length || 0;
+      const questionsCount = Array.isArray(data?.sections)
+        ? data.sections.reduce((total: number, section: { questions?: unknown[] }) => total + (section.questions?.length || 0), 0)
+        : data?.questions?.length || 0;
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: `📋 Готово! Я создал тест "${testTitle}" на ${questionsCount} вопросов. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
+        content: `📋 Готово! Я создал тест "${testTitle}" на ${questionsCount} вопросов с разбивкой по темам. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);

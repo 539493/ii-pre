@@ -16,6 +16,9 @@ interface TestQuestion {
   type: string;
   correct_answer: string;
   hint: string;
+  topic?: string;
+  section_index?: number;
+  question_index?: number;
 }
 
 interface UserTest {
@@ -69,6 +72,22 @@ export default function TestsPage() {
     }
     return map;
   }, [filtered]);
+
+  const selectedTestSections = useMemo(() => {
+    if (!selectedTest) return [];
+
+    const map = new Map<string, TestQuestion[]>();
+    for (const question of selectedTest.questions) {
+      const topic = question.topic || "Общий блок";
+      if (!map.has(topic)) map.set(topic, []);
+      map.get(topic)!.push(question);
+    }
+
+    return Array.from(map.entries()).map(([topic, questions]) => ({
+      topic,
+      questions: [...questions].sort((a, b) => (a.question_index ?? 0) - (b.question_index ?? 0)),
+    }));
+  }, [selectedTest]);
 
   async function checkAnswer(testId: string, q: TestQuestion) {
     const answer = answers[q.id]?.trim();
@@ -140,7 +159,9 @@ export default function TestsPage() {
         </button>
         <div className="mb-4">
           <h1 className="text-xl font-bold text-foreground">{selectedTest.title}</h1>
-          <p className="text-sm text-muted-foreground">Тест • {selectedTest.questions.length} вопросов</p>
+          <p className="text-sm text-muted-foreground">
+            Тест • {selectedTest.questions.length} вопросов • {selectedTestSections.length} тем
+          </p>
           {selectedTest.completed && (
             <div className="mt-2 flex items-center gap-2 text-green-400 text-sm">
               <Trophy className="h-4 w-4" /> Пройдено! Результат: {selectedTest.score}%
@@ -149,58 +170,77 @@ export default function TestsPage() {
         </div>
 
         <div className="space-y-4">
-          {selectedTest.questions.map((q, i) => {
-            const existingResult = selectedTest.results?.[q.id];
-            const fb = feedback[q.id];
-            const isCorrect = fb?.correct || existingResult?.correct;
-
-            return (
-              <div key={q.id} className={`rounded-2xl border p-4 transition-all ${
-                isCorrect ? "border-green-500/30 bg-green-500/5" : "border-border bg-card"
-              }`}>
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 space-y-2">
-                    <p className="text-sm font-medium text-foreground">{q.question}</p>
-                    {isCorrect ? (
-                      <div className="flex items-center gap-2 text-green-400 text-sm">
-                        <CheckCircle2 className="h-4 w-4" />
-                        {existingResult ? `Ответ: ${existingResult.answer}` : "Верно!"}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <input
-                          value={answers[q.id] || ""}
-                          onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
-                          onKeyDown={e => { if (e.key === "Enter") checkAnswer(selectedTest.id, q); }}
-                          placeholder="Твой ответ..."
-                          className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
-                          disabled={checking === q.id}
-                        />
-                        <button
-                          onClick={() => checkAnswer(selectedTest.id, q)}
-                          disabled={checking === q.id || !answers[q.id]?.trim()}
-                          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                        >
-                          {checking === q.id ? "..." : "Проверить"}
-                        </button>
-                      </div>
-                    )}
-                    {fb && !fb.correct && (
-                      <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-orange-300">
-                        {fb.message}
-                        {fb.attempts >= 3 && (
-                          <p className="mt-1 text-[10px] opacity-70">💡 Подсказка: {q.hint}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+          {selectedTestSections.map((section, sectionIndex) => (
+            <div key={section.topic} className="rounded-2xl border border-border bg-card p-4">
+              <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Тема {sectionIndex + 1}
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground">{section.topic}</h2>
                 </div>
+                <span className="rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
+                  {section.questions.length} вопросов
+                </span>
               </div>
-            );
-          })}
+
+              <div className="space-y-4">
+                {section.questions.map((q, questionIndex) => {
+                  const globalIndex = selectedTest.questions.findIndex((item) => item.id === q.id);
+                  const existingResult = selectedTest.results?.[q.id];
+                  const fb = feedback[q.id];
+                  const isCorrect = fb?.correct || existingResult?.correct;
+
+                  return (
+                    <div key={q.id} className={`rounded-2xl border p-4 transition-all ${
+                      isCorrect ? "border-green-500/30 bg-green-500/5" : "border-border bg-card"
+                    }`}>
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
+                          {globalIndex >= 0 ? globalIndex + 1 : questionIndex + 1}
+                        </span>
+                        <div className="flex-1 space-y-2">
+                          <p className="text-sm font-medium text-foreground">{q.question}</p>
+                          {isCorrect ? (
+                            <div className="flex items-center gap-2 text-green-400 text-sm">
+                              <CheckCircle2 className="h-4 w-4" />
+                              {existingResult ? `Ответ: ${existingResult.answer}` : "Верно!"}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <input
+                                value={answers[q.id] || ""}
+                                onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                                onKeyDown={e => { if (e.key === "Enter") checkAnswer(selectedTest.id, q); }}
+                                placeholder="Твой ответ..."
+                                className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                                disabled={checking === q.id}
+                              />
+                              <button
+                                onClick={() => checkAnswer(selectedTest.id, q)}
+                                disabled={checking === q.id || !answers[q.id]?.trim()}
+                                className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                              >
+                                {checking === q.id ? "..." : "Проверить"}
+                              </button>
+                            </div>
+                          )}
+                          {fb && !fb.correct && (
+                            <div className="whitespace-pre-line rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-orange-300">
+                              {fb.message}
+                              {fb.attempts >= 3 && (
+                                <p className="mt-1 text-[10px] opacity-70">💡 Подсказка: {q.hint}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -278,7 +318,7 @@ export default function TestsPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{test.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          Тест • {test.questions.length} вопросов
+                          Тест • {test.questions.length} вопросов • {new Set(test.questions.map((question) => question.topic || "Общий блок")).size} тем
                           {test.completed && ` • ${test.score}%`}
                         </p>
                       </div>

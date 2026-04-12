@@ -51,18 +51,24 @@ ${progressContext}
 ${historyContext}
 
 Generate one solid test with 6-10 questions.
-This must be a single standalone test inside one section.
+This must be a single standalone test.
+Inside this single test, distribute questions into 2-4 short topic sections.
 
 Return STRICT JSON only:
 {
   "test_title": "название теста с эмодзи",
-  "questions": [
+  "sections": [
     {
-      "id": "q1",
-      "question": "Вопрос?",
-      "type": "text",
-      "correct_answer": "правильный ответ",
-      "hint": "подсказка при ошибке"
+      "topic": "Название темы",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "Вопрос?",
+          "type": "text",
+          "correct_answer": "правильный ответ",
+          "hint": "подсказка при ошибке"
+        }
+      ]
     }
   ]
 }
@@ -74,7 +80,10 @@ Rules:
 - Hints should guide without revealing the answer
 - All text in Russian (except English subject where questions/answers are in English)
 - Include emojis in the test title
-- Return exactly one test, not several lessons, sections or parts`;
+- Return exactly one test object, not several lessons or separate tests
+- Sections are only internal thematic groups inside the same test
+- Each section should have 2-4 questions
+- Keep section names short and clear`;
 
     const userPrompt = topic
       ? `Create one complete test for the topic: "${topic}"`
@@ -125,13 +134,33 @@ Rules:
       });
     }
 
-    if (parsed.test_title && parsed.questions && deviceId) {
+    const flattenedQuestions = Array.isArray(parsed.sections)
+      ? parsed.sections.flatMap((section: any, sectionIndex: number) =>
+          Array.isArray(section?.questions)
+            ? section.questions.map((question: any, questionIndex: number) => ({
+                ...question,
+                topic: section?.topic || `Тема ${sectionIndex + 1}`,
+                section_index: sectionIndex,
+                question_index: questionIndex,
+              }))
+            : [],
+        )
+      : Array.isArray(parsed.questions)
+      ? parsed.questions.map((question: any, questionIndex: number) => ({
+          ...question,
+          topic: "Общий блок",
+          section_index: 0,
+          question_index: questionIndex,
+        }))
+      : [];
+
+    if (parsed.test_title && flattenedQuestions.length > 0 && deviceId) {
       await supabase.from("user_tests").insert({
         device_id: deviceId,
         subject_id: subjectId,
         title: parsed.test_title,
         lesson_number: 1,
-        questions: parsed.questions,
+        questions: flattenedQuestions,
       });
     }
 

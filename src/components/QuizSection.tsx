@@ -77,7 +77,7 @@ export default function QuizSection({ questions, onAnswer, quizFeedback, loading
             </button>
 
             {feedback && !isSkipped && (
-              <div className={`rounded-lg px-3 py-2 text-xs ${
+              <div className={`whitespace-pre-line rounded-lg px-3 py-2 text-xs ${
                 feedback.correct
                   ? "bg-green-500/10 text-green-300 border border-green-500/20"
                   : "bg-orange-500/10 text-orange-300 border border-orange-500/20"

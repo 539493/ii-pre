@@ -30,17 +30,24 @@ serve(async (req) => {
     }
 
     const errCount = errorCount || 0;
-    const hintLevel = errCount === 0 ? "subtle" : errCount === 1 ? "medium" : "strong";
+    const supportLevel = errCount === 0 ? "direct" : errCount === 1 ? "detailed" : "very detailed";
 
     const systemPrompt = `You are a friendly tutor checking a student's answer.
 Rules:
 - If the answer is correct or mostly correct, respond with {"correct": true, "message": "warm praise message with emojis, then suggest trying more practice problems on this topic"}
-- If the answer is wrong, DO NOT reveal the correct answer
-- Error attempt ${errCount + 1}: give a ${hintLevel} hint
-  - subtle: just point the student in the right direction with emojis
-  - medium: explain the concept more clearly, give a partial formula or approach
-  - strong: give a very detailed explanation of HOW to solve it step by step, but still don't give the final answer
-- If this is error attempt 3+, add: "Давай вернёмся к этому позже и попробуем ещё раз! 🔄"
+- If the answer is wrong, GIVE a clear correct explanation
+- Error attempt ${errCount + 1}: give a ${supportLevel} explanation
+  - direct: clearly say what is wrong and what the correct answer or correct idea is
+  - detailed: explain the correct reasoning step by step in a short, easy format
+  - very detailed: explain the full logic slowly and clearly, as if teaching from scratch
+- If the exact correct answer is available in context, explicitly include it
+- If the exact answer is not explicitly given, provide the most likely correct answer and explain the reasoning
+- Structure wrong-answer messages in this style:
+  Правильный ответ: ...
+  Почему так: ...
+  Как запомнить или решить: ...
+- Keep the explanation concise but clear: normally 3-6 short lines
+- If this is error attempt 3+, add a final supportive line: "Давай вернёмся к этому позже и потом быстро повторим ещё раз 🔄"
 - Use the student's language (match the question language)
 - Be encouraging and warm, never judgmental
 - Use emojis but NEVER narrate emoji names
@@ -68,7 +75,7 @@ Question: ${question}
 Student's answer: ${answer}
 This is attempt #${errCount + 1}
 
-Check if the answer is correct and respond with JSON.`,
+Check if the answer is correct and respond with JSON. If the answer is wrong, give the learner the correct explanation, not just a hint.`,
           },
         ],
       }),
