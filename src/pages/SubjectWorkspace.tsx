@@ -112,10 +112,8 @@ export default function SubjectWorkspace() {
 
   if (!subject) {
     return (
-      <div className="page-shell items-center justify-center">
-        <div className="page-hero text-center">
-          <p className="text-muted-foreground">Предмет не найден</p>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <p className="text-muted-foreground">Предмет не найден</p>
       </div>
     );
   }
@@ -326,100 +324,64 @@ export default function SubjectWorkspace() {
   };
 
   return (
-    <div className="page-shell !overflow-hidden gap-5">
-      <section className="page-hero shrink-0">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-start gap-4">
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Header */}
+      <header className="flex items-center gap-3 border-b border-border px-4 py-3 shrink-0">
+        <button onClick={() => navigate("/")} className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <span className="text-2xl">{subject.icon}</span>
+        <h1 className="text-lg font-bold text-foreground">{subject.name}</h1>
+        <div className="ml-auto flex items-center gap-2">
+          {(subject.id === "math" || subject.id.startsWith("custom-")) && (
             <button
-              onClick={() => navigate("/")}
-              className="mt-1 rounded-2xl border border-border/80 bg-white/80 p-2.5 text-muted-foreground transition hover:border-primary/20 hover:text-foreground"
+              onClick={() => setShowFormula(!showFormula)}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition ${
+                showFormula ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <Calculator className="h-4 w-4" /> Формулы
             </button>
-            <div className="min-w-0">
-              <div className="flex items-center gap-4">
-                <div
-                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] border border-white/70 text-3xl shadow-[0_18px_40px_-30px_rgba(15,23,42,0.4)]"
-                  style={{ backgroundColor: `hsl(${subject.color} / 0.18)` }}
-                >
-                  {subject.icon}
-                </div>
-                <div>
-                  <p className="page-kicker">Персональная сессия</p>
-                  <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{subject.name}</h1>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    {subject.description}. Задавай вопросы, прикрепляй фото задач и разбирай материал по шагам на интерактивной доске.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {(subject.id === "math" || subject.id.startsWith("custom-")) && (
-              <button
-                onClick={() => setShowFormula(!showFormula)}
-                className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm transition ${
-                  showFormula
-                    ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-border bg-white/70 text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Calculator className="h-4 w-4" /> Формулы
-              </button>
-            )}
-            <button
-              onClick={() => { setVoiceEnabled((v) => !v); if (isSpeaking) stop(); }}
-              className="flex items-center gap-2 rounded-2xl border border-border bg-white/70 px-4 py-3 text-sm text-muted-foreground transition hover:text-foreground"
-            >
-              {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              {voiceEnabled ? "Голос включён" : "Голос выключен"}
-            </button>
-          </div>
+          )}
+          <button
+            onClick={() => { setVoiceEnabled((v) => !v); if (isSpeaking) stop(); }}
+            className="flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+          >
+            {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            {voiceEnabled ? "Голос вкл" : "Голос выкл"}
+          </button>
         </div>
-      </section>
+      </header>
 
-      <main className="panel-surface min-h-0 flex-1 overflow-hidden p-3">
-        <ResizablePanelGroup direction="horizontal" className="h-full rounded-[24px]">
+      {/* Main layout */}
+      <main className="flex-1 overflow-hidden p-2">
+        <ResizablePanelGroup direction="horizontal" className="h-full rounded-xl">
+          {/* Board */}
           <ResizablePanel defaultSize={60} minSize={35}>
-            <div className="flex h-full flex-col gap-3 pr-1">
-              <div className="panel-subtle flex flex-1 min-h-0 flex-col overflow-hidden p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="page-kicker">Визуальное объяснение</p>
-                    <h2 className="mt-2 text-xl font-semibold text-card-foreground">Доска занятия</h2>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Пошаговая схема, которая обновляется вместе с ответом и озвучкой.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    {loading && (
-                      <span className="rounded-full border border-border bg-white/80 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-                        Генерация ответа…
-                      </span>
-                    )}
-                    {isSpeaking && (
-                      <button
-                        onClick={stop}
-                        className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/20"
-                      >
-                        Остановить озвучку
-                      </button>
-                    )}
-                  </div>
+            <div className="flex h-full flex-col gap-2 px-1">
+              <div className="rounded-2xl border border-border bg-card p-3 shadow-lg flex-1 min-h-0 overflow-hidden">
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-card-foreground">📝 Доска</h2>
+                  {loading && (
+                    <span className="rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">Генерация…</span>
+                  )}
+                  {isSpeaking && (
+                    <button onClick={stop} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20">
+                      ⏹ Стоп
+                    </button>
+                  )}
                 </div>
-
-                <div className="mt-4 flex-1 min-h-0 overflow-hidden rounded-[24px] border border-slate-800/50 bg-slate-950/80 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  <BoardRenderer items={visibleBoard} />
-                </div>
+                <BoardRenderer items={visibleBoard} />
               </div>
 
+              {/* Formula bar */}
               {showFormula && (
-                <div className="panel-subtle shrink-0 px-4 py-3">
+                <div className="shrink-0 rounded-xl border border-border bg-card px-3 py-2">
                   <FormulaInput onInsert={handleFormulaInsert} />
                 </div>
               )}
 
+              {/* Input with integrated image attachment */}
               <div className="shrink-0">
                 <PromptInput
                   prompt={prompt}
@@ -432,15 +394,14 @@ export default function SubjectWorkspace() {
               </div>
 
               {error && (
-                <div className="shrink-0 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {error}
-                </div>
+                <div className="shrink-0 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
               )}
             </div>
           </ResizablePanel>
 
           <ResizableHandle withHandle />
 
+          {/* Chat */}
           <ResizablePanel defaultSize={40} minSize={20} maxSize={60}>
             <div className="h-full overflow-hidden pl-1">
               <ChatPanel

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAllSubjects } from "@/lib/subjects";
-import { CheckCircle2, Circle, ChevronRight, Trophy } from "lucide-react";
+import { CheckCircle2, Circle, ChevronRight, Trophy, RotateCcw } from "lucide-react";
 
 const DEVICE_ID_KEY = "ai-tutor-device-id";
 function getDeviceId() {
@@ -113,14 +113,13 @@ export default function TestsPage() {
 
   if (selectedTest) {
     return (
-      <div className="page-shell">
-        <button onClick={() => { setSelectedTest(null); setAnswers({}); setFeedback({}); }} className="mb-4 flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground">
+      <div className="flex h-full flex-col overflow-y-auto p-6">
+        <button onClick={() => { setSelectedTest(null); setAnswers({}); setFeedback({}); }} className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition">
           ← Назад к тестам
         </button>
-        <div className="page-hero mb-5">
-          <p className="page-kicker">Тестирование</p>
+        <div className="mb-4">
           <h1 className="text-xl font-bold text-foreground">{selectedTest.title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Урок {selectedTest.lesson_number} • {selectedTest.questions.length} вопросов</p>
+          <p className="text-sm text-muted-foreground">Урок {selectedTest.lesson_number} • {selectedTest.questions.length} вопросов</p>
           {selectedTest.completed && (
             <div className="mt-2 flex items-center gap-2 text-green-400 text-sm">
               <Trophy className="h-4 w-4" /> Пройдено! Результат: {selectedTest.score}%
@@ -135,8 +134,8 @@ export default function TestsPage() {
             const isCorrect = fb?.correct || existingResult?.correct;
 
             return (
-              <div key={q.id} className={`panel-surface p-4 transition-all ${
-                isCorrect ? "border-green-500/30 bg-green-500/5" : ""
+              <div key={q.id} className={`rounded-2xl border p-4 transition-all ${
+                isCorrect ? "border-green-500/30 bg-green-500/5" : "border-border bg-card"
               }`}>
                 <div className="flex items-start gap-3">
                   <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
@@ -156,13 +155,13 @@ export default function TestsPage() {
                           onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
                           onKeyDown={e => { if (e.key === "Enter") checkAnswer(selectedTest.id, q); }}
                           placeholder="Твой ответ..."
-                          className="flex-1 rounded-2xl border border-border bg-secondary/70 px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                          className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
                           disabled={checking === q.id}
                         />
                         <button
                           onClick={() => checkAnswer(selectedTest.id, q)}
                           disabled={checking === q.id || !answers[q.id]?.trim()}
-                          className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
                         >
                           {checking === q.id ? "..." : "Проверить"}
                         </button>
@@ -187,19 +186,17 @@ export default function TestsPage() {
   }
 
   return (
-    <div className="page-shell">
-      <section className="page-hero mb-6">
-        <p className="page-kicker">Контроль знаний</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Мои тесты</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Попроси в чате предмета составить план обучения, и здесь появятся последовательные уроки с вопросами для закрепления.
-        </p>
-      </section>
+    <div className="flex h-full flex-col overflow-y-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Мои тесты</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Попроси в чате «составь план обучения» чтобы создать тесты</p>
+      </div>
 
+      {/* Subject filter */}
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => setSelectedSubject("all")}
-          className={`rounded-2xl px-3 py-2 text-xs font-medium transition ${selectedSubject === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+          className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
         >
           Все
         </button>
@@ -207,7 +204,7 @@ export default function TestsPage() {
           <button
             key={s.id}
             onClick={() => setSelectedSubject(s.id)}
-            className={`rounded-2xl px-3 py-2 text-xs font-medium transition ${selectedSubject === s.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === s.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
           >
             {s.icon} {s.name}
           </button>
@@ -215,7 +212,7 @@ export default function TestsPage() {
       </div>
 
       {tests.length === 0 ? (
-        <div className="panel-surface flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <p className="text-4xl mb-3">📋</p>
             <p className="text-sm text-muted-foreground">Тестов пока нет</p>
@@ -236,8 +233,8 @@ export default function TestsPage() {
                     <button
                       key={test.id}
                       onClick={() => { setSelectedTest(test); setAnswers({}); setFeedback({}); }}
-                      className={`flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition hover:border-primary/30 ${
-                        test.completed ? "border-green-500/20 bg-green-500/5" : "border-border bg-white/75"
+                      className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition hover:border-primary/30 ${
+                        test.completed ? "border-green-500/20 bg-green-500/5" : "border-border bg-card"
                       }`}
                     >
                       {test.completed ? (

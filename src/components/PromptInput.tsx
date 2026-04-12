@@ -27,19 +27,14 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
   };
 
   return (
-    <div className="panel-surface p-3">
+    <div className="rounded-2xl border border-border bg-card p-3 shadow-lg">
+      {/* Attached image preview */}
       {attachedImage && (
-        <div className="mb-3 flex items-start gap-3 rounded-2xl border border-border/80 bg-secondary/50 p-3">
-          <img src={attachedImage} alt="Прикреплённое фото" className="h-20 rounded-xl border border-border object-contain" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">Изображение прикреплено</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Можно отправить только фото или добавить к нему пояснение текстом.
-            </p>
-          </div>
+        <div className="mb-2 flex items-start gap-2">
+          <img src={attachedImage} alt="Прикреплённое фото" className="h-20 rounded-lg object-contain border border-border" />
           <button
             onClick={() => onAttachImage?.(null)}
-            className="rounded-full p-1 text-muted-foreground transition hover:bg-white/70 hover:text-foreground"
+            className="rounded-full p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition"
           >
             <X className="h-4 w-4" />
           </button>
@@ -47,12 +42,13 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
       )}
 
       <div className="flex items-end gap-3">
+        {/* Image attach button */}
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
         <button
           onClick={() => fileRef.current?.click()}
           disabled={loading}
           title="Прикрепить фото"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-secondary/80 text-muted-foreground transition hover:border-primary/20 hover:bg-primary/5 hover:text-primary disabled:opacity-50"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-muted-foreground transition hover:bg-primary/20 hover:text-primary disabled:opacity-50"
         >
           <ImagePlus className="h-5 w-5" />
         </button>
@@ -67,13 +63,13 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
             }
           }}
           placeholder="Что ты хочешь изучить? Например: Объясни производную…"
-          className="min-h-[56px] flex-1 resize-none rounded-2xl border border-border bg-secondary/30 px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+          className="min-h-[56px] flex-1 resize-none rounded-xl border-0 bg-transparent px-3 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           rows={2}
         />
         <button
           onClick={onSubmit}
-          disabled={loading || (!prompt.trim() && !attachedImage)}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+          disabled={loading && !attachedImage}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
         >
           {loading ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />

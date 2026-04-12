@@ -84,21 +84,19 @@ export default function ProgressPage() {
   };
 
   return (
-    <div className="page-shell">
-      <section className="page-hero mb-6">
-        <p className="page-kicker">Аналитика обучения</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Моя успеваемость</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Смотри, какие темы уже освоены, где нужно повторение и как меняется качество ответов по каждому предмету.
-        </p>
-      </section>
+    <div className="flex h-full flex-col overflow-y-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Моя успеваемость</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Аналитика по изученным темам и оценки</p>
+      </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/* Subject cards */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {subjectStats.map((s) => (
           <div
             key={s.id}
-            className={`panel-surface cursor-pointer p-4 transition-all hover:-translate-y-0.5 ${
-              selectedSubject === s.id ? "border-primary/50 ring-1 ring-primary/20" : ""
+            className={`cursor-pointer rounded-2xl border bg-card p-4 shadow transition-all hover:border-primary/30 ${
+              selectedSubject === s.id ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
             }`}
             onClick={() => setSelectedSubject(selectedSubject === s.id ? "all" : s.id)}
           >
@@ -128,7 +126,8 @@ export default function ProgressPage() {
         ))}
       </div>
 
-      <div className="panel-surface p-4">
+      {/* Topic list grouped by theme */}
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
         <div className="mb-3 flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold text-card-foreground">
@@ -151,7 +150,7 @@ export default function ProgressPage() {
               const timeLabel = daysAgo === 0 ? "Сегодня" : daysAgo === 1 ? "Вчера" : `${daysAgo} дн. назад`;
 
               return (
-                <div key={i} className="flex items-center gap-3 rounded-2xl border border-border/80 bg-secondary/50 px-4 py-3">
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-secondary/50 px-4 py-3">
                   <span className="text-lg">{subj?.icon || "📚"}</span>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">{t.topic}</p>
