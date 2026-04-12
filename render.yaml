@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: smart-canvas-learn
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://xtuyqpemvijhqcoklhjb.supabase.co
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0dXlxcGVtdmlqaHFjb2tsaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDc1MTUsImV4cCI6MjA5MDgyMzUxNX0.ZYPK-FfMBiuFAp8KEiB14HjnGg_C-z-WdJdmAieOCMs
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
