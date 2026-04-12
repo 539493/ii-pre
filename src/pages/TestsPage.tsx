@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getAllSubjects } from "@/lib/subjects";
-import { CheckCircle2, Circle, ChevronRight, Trophy, RotateCcw } from "lucide-react";
+import { getAllSubjects, getSuggestedSubjectName, suggestSubjectAppearance } from "@/lib/subjects";
+import { CheckCircle2, Circle, ChevronRight, Trophy } from "lucide-react";
 
 const DEVICE_ID_KEY = "ai-tutor-device-id";
 function getDeviceId() {
@@ -39,6 +39,7 @@ export default function TestsPage() {
   const [checking, setChecking] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState("all");
   const subjects = getAllSubjects();
+  const subjectMap = useMemo(() => new Map(subjects.map((subject) => [subject.id, subject])), [subjects]);
   const deviceId = useMemo(() => getDeviceId(), []);
 
   useEffect(() => { loadTests(); }, []);
@@ -192,24 +193,26 @@ export default function TestsPage() {
         <p className="mt-1 text-sm text-muted-foreground">Попроси в чате «составь план обучения» чтобы создать тесты</p>
       </div>
 
-      {/* Subject filter */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedSubject("all")}
-          className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
-        >
-          Все
-        </button>
-        {subjects.map(s => (
+      {subjects.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
           <button
-            key={s.id}
-            onClick={() => setSelectedSubject(s.id)}
-            className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === s.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setSelectedSubject("all")}
+            className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
           >
-            {s.icon} {s.name}
+            Все
           </button>
-        ))}
-      </div>
+          {subjects.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setSelectedSubject(s.id)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${selectedSubject === s.id ? "text-white" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+              style={selectedSubject === s.id ? { backgroundColor: `hsl(${s.color})` } : undefined}
+            >
+              {s.icon} {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {tests.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
@@ -222,11 +225,20 @@ export default function TestsPage() {
       ) : (
         <div className="space-y-6">
           {Array.from(grouped.entries()).map(([subjectId, subjectTests]) => {
-            const subj = subjects.find(s => s.id === subjectId);
+            const subj = subjectMap.get(subjectId);
+            const fallbackName = getSuggestedSubjectName(subjectId);
+            const fallbackAppearance = suggestSubjectAppearance(subj?.name || fallbackName);
+            const color = subj?.color || fallbackAppearance.color;
             return (
               <div key={subjectId}>
                 <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <span>{subj?.icon || "📚"}</span> {subj?.name || subjectId}
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: `hsl(${color} / 0.14)` }}
+                  >
+                    {subj?.icon || fallbackAppearance.icon}
+                  </span>
+                  {subj?.name || fallbackName}
                 </h2>
                 <div className="space-y-2">
                   {subjectTests.map(test => (
@@ -236,6 +248,7 @@ export default function TestsPage() {
                       className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition hover:border-primary/30 ${
                         test.completed ? "border-green-500/20 bg-green-500/5" : "border-border bg-card"
                       }`}
+                      style={!test.completed ? { borderLeft: `4px solid hsl(${color})` } : undefined}
                     >
                       {test.completed ? (
                         <CheckCircle2 className="h-5 w-5 shrink-0 text-green-400" />
@@ -256,6 +269,12 @@ export default function TestsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {subjects.length === 0 && tests.length === 0 && (
+        <div className="mt-6 rounded-2xl border border-dashed border-border bg-card/40 px-6 py-8 text-center text-sm text-muted-foreground">
+          После добавления предметов и создания плана обучения тесты появятся здесь автоматически.
         </div>
       )}
     </div>

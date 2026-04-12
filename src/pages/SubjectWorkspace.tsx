@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TutorResponse, KnowledgeItem, ChatMessage } from "@/types/tutor";
-import { getSubjectById } from "@/lib/subjects";
+import { getSubjectById, isFormulaSubject } from "@/lib/subjects";
 import BoardRenderer from "@/components/BoardRenderer";
 import ChatPanel from "@/components/ChatPanel";
 import PromptInput from "@/components/PromptInput";
@@ -333,7 +333,7 @@ export default function SubjectWorkspace() {
         <span className="text-2xl">{subject.icon}</span>
         <h1 className="text-lg font-bold text-foreground">{subject.name}</h1>
         <div className="ml-auto flex items-center gap-2">
-          {(subject.id === "math" || subject.id.startsWith("custom-")) && (
+          {isFormulaSubject(subject) && (
             <button
               onClick={() => setShowFormula(!showFormula)}
               className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition ${
