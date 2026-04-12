@@ -155,6 +155,12 @@ Rules:
       : [];
 
     if (parsed.test_title && flattenedQuestions.length > 0 && deviceId) {
+      await supabase
+        .from("user_tests")
+        .delete()
+        .eq("device_id", deviceId)
+        .eq("subject_id", subjectId);
+
       await supabase.from("user_tests").insert({
         device_id: deviceId,
         subject_id: subjectId,

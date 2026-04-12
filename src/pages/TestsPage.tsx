@@ -59,7 +59,18 @@ export default function TestsPage() {
       .select("*")
       .eq("device_id", deviceId)
       .order("created_at", { ascending: true });
-    if (data) setTests(data as any);
+    if (data) {
+      const latestBySubject = new Map<string, UserTest>();
+
+      for (const rawTest of data as UserTest[]) {
+        const existing = latestBySubject.get(rawTest.subject_id);
+        if (!existing || new Date(rawTest.created_at).getTime() >= new Date(existing.created_at).getTime()) {
+          latestBySubject.set(rawTest.subject_id, rawTest);
+        }
+      }
+
+      setTests(Array.from(latestBySubject.values()));
+    }
   }
 
   const filtered = selectedSubject === "all" ? tests : tests.filter(t => t.subject_id === selectedSubject);
