@@ -78,8 +78,17 @@ CRITICAL BOARD LAYOUT RULES:
 - Keep text left-aligned starting at x=50-60
 - Boxes should not overlap — leave at least 20px gap
 - Use max 2-3 items per row
-- Use 4 to 10 board objects total
+- Use 4 to 8 board objects total, unless the user explicitly asks for a very detailed board
 - Keep formulas short
+- Every text item must be SHORT and readable at a glance
+- Prefer 1 short sentence, 1 formula, or 1 compact label per board item
+- Avoid long paragraphs on the board
+- Aim for each text item to fit in 1-2 lines maximum
+- If the explanation is long, move details into "steps" and keep the board only for the key structure
+- Keep enough empty space so the full board fits comfortably inside the canvas
+- Do not place any important text too close to the right edge or bottom edge
+- Prefer one title row and then 3-4 structured content rows
+- For boxes, keep text concise and box width moderate so all content fits on screen
 - For math: use proper notation (fractions as a/b, powers as x², roots as √)
 - Language of board items must match the subject language rules above
 `;
