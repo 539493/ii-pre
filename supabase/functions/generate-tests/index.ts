@@ -45,30 +45,24 @@ serve(async (req) => {
       : "";
 
     const systemPrompt = `You are a test generator for subject: ${subjectName || subjectId}.
-Based on the student's learning history and progress, create a structured study plan with tests.
+Based on the student's learning history and progress, create ONE complete test, not a multi-lesson plan.
 
 ${progressContext}
 ${historyContext}
 
-Generate 3-5 test lessons, each with 3-5 questions.
-Each test is a lesson in a learning plan.
+Generate one solid test with 6-10 questions.
+This must be a single standalone test inside one section.
 
 Return STRICT JSON only:
 {
-  "plan_title": "название плана обучения",
-  "lessons": [
+  "test_title": "название теста с эмодзи",
+  "questions": [
     {
-      "lesson_number": 1,
-      "title": "Название урока с эмодзи",
-      "questions": [
-        {
-          "id": "q1",
-          "question": "Вопрос?",
-          "type": "text",
-          "correct_answer": "правильный ответ",
-          "hint": "подсказка при ошибке"
-        }
-      ]
+      "id": "q1",
+      "question": "Вопрос?",
+      "type": "text",
+      "correct_answer": "правильный ответ",
+      "hint": "подсказка при ошибке"
     }
   ]
 }
@@ -79,11 +73,12 @@ Rules:
 - Make questions specific and testable
 - Hints should guide without revealing the answer
 - All text in Russian (except English subject where questions/answers are in English)
-- Include emojis in titles`;
+- Include emojis in the test title
+- Return exactly one test, not several lessons, sections or parts`;
 
     const userPrompt = topic
-      ? `Create a test plan for the topic: "${topic}"`
-      : `Create a comprehensive test plan based on what the student has been learning`;
+      ? `Create one complete test for the topic: "${topic}"`
+      : `Create one comprehensive test based on what the student has been learning`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -130,17 +125,14 @@ Rules:
       });
     }
 
-    // Save tests to DB
-    if (parsed.lessons && deviceId) {
-      for (const lesson of parsed.lessons) {
-        await supabase.from("user_tests").insert({
-          device_id: deviceId,
-          subject_id: subjectId,
-          title: lesson.title,
-          lesson_number: lesson.lesson_number,
-          questions: lesson.questions,
-        });
-      }
+    if (parsed.test_title && parsed.questions && deviceId) {
+      await supabase.from("user_tests").insert({
+        device_id: deviceId,
+        subject_id: subjectId,
+        title: parsed.test_title,
+        lesson_number: 1,
+        questions: parsed.questions,
+      });
     }
 
     return new Response(JSON.stringify(parsed), {

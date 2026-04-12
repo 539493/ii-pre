@@ -189,12 +189,12 @@ export default function SubjectWorkspace() {
         return;
       }
 
-      const planTitle = data?.plan_title || "План обучения";
-      const lessonsCount = data?.lessons?.length || 0;
+      const testTitle = data?.test_title || "Тест";
+      const questionsCount = data?.questions?.length || 0;
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: `📋 Готово! Я создал план обучения "${planTitle}" с ${lessonsCount} уроками. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
+        content: `📋 Готово! Я создал тест "${testTitle}" на ${questionsCount} вопросов. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);

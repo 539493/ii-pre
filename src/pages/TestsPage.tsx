@@ -31,6 +31,12 @@ interface UserTest {
   created_at: string;
 }
 
+interface TestResultItem {
+  answer: string;
+  correct: boolean;
+  attempts: number;
+}
+
 export default function TestsPage() {
   const [tests, setTests] = useState<UserTest[]>([]);
   const [selectedTest, setSelectedTest] = useState<UserTest | null>(null);
@@ -91,17 +97,31 @@ export default function TestsPage() {
         },
       }));
 
-      // Save result to test
       if (data?.correct && selectedTest) {
-        const newResults = { ...(selectedTest.results || {}), [q.id]: { answer, correct: true, attempts: currentAttempts } };
+        const newResults: Record<string, TestResultItem> = {
+          ...((selectedTest.results as Record<string, TestResultItem> | null) || {}),
+          [q.id]: { answer, correct: true, attempts: currentAttempts },
+        };
         const allCorrect = selectedTest.questions.every(qq => newResults[qq.id]?.correct);
-        const score = Math.round((Object.values(newResults).filter((r: any) => r.correct).length / selectedTest.questions.length) * 100);
+        const correctCount = Object.values(newResults).filter((r) => r.correct).length;
+        const score = Math.round((correctCount / selectedTest.questions.length) * 100);
 
         await supabase.from("user_tests").update({
           results: newResults,
           completed: allCorrect,
           score,
         } as any).eq("id", testId);
+
+        if (allCorrect && !selectedTest.completed) {
+          await supabase.from("progress_records").insert({
+            subject_id: selectedTest.subject_id,
+            topic: selectedTest.title,
+            score,
+            total_questions: selectedTest.questions.length,
+            correct_answers: correctCount,
+            device_id: deviceId,
+          } as any);
+        }
 
         setSelectedTest(prev => prev ? { ...prev, results: newResults as any, completed: allCorrect, score } : null);
         loadTests();
@@ -120,7 +140,7 @@ export default function TestsPage() {
         </button>
         <div className="mb-4">
           <h1 className="text-xl font-bold text-foreground">{selectedTest.title}</h1>
-          <p className="text-sm text-muted-foreground">Урок {selectedTest.lesson_number} • {selectedTest.questions.length} вопросов</p>
+          <p className="text-sm text-muted-foreground">Тест • {selectedTest.questions.length} вопросов</p>
           {selectedTest.completed && (
             <div className="mt-2 flex items-center gap-2 text-green-400 text-sm">
               <Trophy className="h-4 w-4" /> Пройдено! Результат: {selectedTest.score}%
@@ -190,7 +210,7 @@ export default function TestsPage() {
     <div className="flex h-full flex-col overflow-y-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Мои тесты</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Попроси в чате «составь план обучения» чтобы создать тесты</p>
+        <p className="mt-1 text-sm text-muted-foreground">Попроси в чате «составь тест», и он появится здесь одним цельным блоком</p>
       </div>
 
       {subjects.length > 0 && (
@@ -219,7 +239,7 @@ export default function TestsPage() {
           <div className="text-center">
             <p className="text-4xl mb-3">📋</p>
             <p className="text-sm text-muted-foreground">Тестов пока нет</p>
-            <p className="text-xs text-muted-foreground mt-1">Напиши в чате предмета «составь план обучения»</p>
+            <p className="text-xs text-muted-foreground mt-1">Напиши в чате предмета «составь тест»</p>
           </div>
         </div>
       ) : (
@@ -258,7 +278,7 @@ export default function TestsPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{test.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          Урок {test.lesson_number} • {test.questions.length} вопросов
+                          Тест • {test.questions.length} вопросов
                           {test.completed && ` • ${test.score}%`}
                         </p>
                       </div>
@@ -274,7 +294,7 @@ export default function TestsPage() {
 
       {subjects.length === 0 && tests.length === 0 && (
         <div className="mt-6 rounded-2xl border border-dashed border-border bg-card/40 px-6 py-8 text-center text-sm text-muted-foreground">
-          После добавления предметов и создания плана обучения тесты появятся здесь автоматически.
+          После добавления предметов и создания теста он появится здесь автоматически.
         </div>
       )}
     </div>
