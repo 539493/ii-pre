@@ -9,7 +9,7 @@ import PromptInput from "@/components/PromptInput";
 import FormulaInput from "@/components/FormulaInput";
 import { useSpeechNarration } from "@/hooks/useSpeechNarration";
 import { useIdlePrompter } from "@/hooks/useIdlePrompter";
-import { ArrowLeft, Volume2, VolumeX, Calculator } from "lucide-react";
+import { ArrowLeft, Volume2, VolumeX, Calculator, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -18,6 +18,7 @@ import {
 
 const HISTORY_KEY = (id: string) => `ai-tutor-history-${id}`;
 const DEVICE_ID_KEY = "ai-tutor-device-id";
+const CHAT_VISIBLE_KEY = "ai-tutor-chat-visible";
 
 function getDeviceId() {
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -26,6 +27,11 @@ function getDeviceId() {
     localStorage.setItem(DEVICE_ID_KEY, id);
   }
   return id;
+}
+
+function getInitialChatVisibility() {
+  const raw = localStorage.getItem(CHAT_VISIBLE_KEY);
+  return raw === null ? true : raw === "true";
 }
 
 interface QuizFeedbackItem {
@@ -54,6 +60,7 @@ export default function SubjectWorkspace() {
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [errorCounts, setErrorCounts] = useState<Record<string, number>>({});
+  const [chatVisible, setChatVisible] = useState(getInitialChatVisibility);
 
   const { narrate, stop, isSpeaking, currentStepIndex } = useSpeechNarration();
   const deviceId = useMemo(() => getDeviceId(), []);
@@ -109,6 +116,10 @@ export default function SubjectWorkspace() {
   useEffect(() => {
     if (currentStepIndex >= 0) setRevealedStepIndex(currentStepIndex);
   }, [currentStepIndex]);
+
+  useEffect(() => {
+    localStorage.setItem(CHAT_VISIBLE_KEY, String(chatVisible));
+  }, [chatVisible]);
 
   if (!subject) {
     return (
@@ -323,6 +334,60 @@ export default function SubjectWorkspace() {
     setPrompt((p) => p + formula);
   };
 
+  const boardContent = (
+    <ResizablePanel defaultSize={chatVisible ? 72 : 100} minSize={35}>
+      <div className="flex h-full flex-col gap-2 px-1">
+        <div className="rounded-2xl border border-border bg-card p-3 shadow-lg flex-1 min-h-0 overflow-hidden">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-card-foreground">📝 Доска</h2>
+            <div className="flex items-center gap-2">
+              {!chatVisible && (
+                <button
+                  onClick={() => setChatVisible(true)}
+                  className="flex items-center gap-1 rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground transition hover:text-foreground"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Показать чат
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+              )}
+              {loading && (
+                <span className="rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">Генерация…</span>
+              )}
+              {isSpeaking && (
+                <button onClick={stop} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20">
+                  ⏹ Стоп
+                </button>
+              )}
+            </div>
+          </div>
+          <BoardRenderer items={visibleBoard} />
+        </div>
+
+        {showFormula && (
+          <div className="shrink-0 rounded-xl border border-border bg-card px-3 py-2">
+            <FormulaInput onInsert={handleFormulaInsert} />
+          </div>
+        )}
+
+        <div className="shrink-0">
+          <PromptInput
+            prompt={prompt}
+            setPrompt={setPrompt}
+            onSubmit={() => handleTeach()}
+            loading={loading}
+            attachedImage={attachedImage}
+            onAttachImage={setAttachedImage}
+          />
+        </div>
+
+        {error && (
+          <div className="shrink-0 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+        )}
+      </div>
+    </ResizablePanel>
+  );
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
@@ -333,6 +398,16 @@ export default function SubjectWorkspace() {
         <span className="text-2xl">{subject.icon}</span>
         <h1 className="text-lg font-bold text-foreground">{subject.name}</h1>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setChatVisible((prev) => !prev)}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition ${
+              chatVisible ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageSquare className="h-4 w-4" />
+            {chatVisible ? "Скрыть чат" : "Показать чат"}
+            {chatVisible ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
           {isFormulaSubject(subject) && (
             <button
               onClick={() => setShowFormula(!showFormula)}
@@ -356,63 +431,26 @@ export default function SubjectWorkspace() {
       {/* Main layout */}
       <main className="flex-1 overflow-hidden p-2">
         <ResizablePanelGroup direction="horizontal" className="h-full rounded-xl">
-          {/* Board */}
-          <ResizablePanel defaultSize={60} minSize={35}>
-            <div className="flex h-full flex-col gap-2 px-1">
-              <div className="rounded-2xl border border-border bg-card p-3 shadow-lg flex-1 min-h-0 overflow-hidden">
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-card-foreground">📝 Доска</h2>
-                  {loading && (
-                    <span className="rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">Генерация…</span>
-                  )}
-                  {isSpeaking && (
-                    <button onClick={stop} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20">
-                      ⏹ Стоп
-                    </button>
-                  )}
+          {boardContent}
+
+          {chatVisible && (
+            <>
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={28} minSize={18} maxSize={45}>
+                <div className="h-full overflow-hidden pl-1">
+                  <ChatPanel
+                    messages={messages}
+                    currentStepIndex={currentStepIndex}
+                    quizFeedback={quizFeedback}
+                    loadingQuestion={loadingQuestion}
+                    onQuizAnswer={handleQuizAnswer}
+                    onHide={() => setChatVisible(false)}
+                  />
                 </div>
-                <BoardRenderer items={visibleBoard} />
-              </div>
-
-              {/* Formula bar */}
-              {showFormula && (
-                <div className="shrink-0 rounded-xl border border-border bg-card px-3 py-2">
-                  <FormulaInput onInsert={handleFormulaInsert} />
-                </div>
-              )}
-
-              {/* Input with integrated image attachment */}
-              <div className="shrink-0">
-                <PromptInput
-                  prompt={prompt}
-                  setPrompt={setPrompt}
-                  onSubmit={() => handleTeach()}
-                  loading={loading}
-                  attachedImage={attachedImage}
-                  onAttachImage={setAttachedImage}
-                />
-              </div>
-
-              {error && (
-                <div className="shrink-0 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
-              )}
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          {/* Chat */}
-          <ResizablePanel defaultSize={40} minSize={20} maxSize={60}>
-            <div className="h-full overflow-hidden pl-1">
-              <ChatPanel
-                messages={messages}
-                currentStepIndex={currentStepIndex}
-                quizFeedback={quizFeedback}
-                loadingQuestion={loadingQuestion}
-                onQuizAnswer={handleQuizAnswer}
-              />
-            </div>
-          </ResizablePanel>
+              </ResizablePanel>
+            </>
+          )}
         </ResizablePanelGroup>
       </main>
     </div>

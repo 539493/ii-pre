@@ -1,6 +1,6 @@
 import { ChatMessage } from "@/types/tutor";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { User, Bot } from "lucide-react";
+import { User, Bot, ChevronRight } from "lucide-react";
 import { useEffect, useRef } from "react";
 import QuizSection from "@/components/QuizSection";
 
@@ -10,9 +10,10 @@ interface Props {
   quizFeedback: Record<string, { correct: boolean; message: string } | null>;
   loadingQuestion: string | null;
   onQuizAnswer: (question: string, answer: string) => void;
+  onHide?: () => void;
 }
 
-export default function ChatPanel({ messages, currentStepIndex, quizFeedback, loadingQuestion, onQuizAnswer }: Props) {
+export default function ChatPanel({ messages, currentStepIndex, quizFeedback, loadingQuestion, onQuizAnswer, onHide }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,6 +26,15 @@ export default function ChatPanel({ messages, currentStepIndex, quizFeedback, lo
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
           <Bot className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold text-card-foreground">Чат</h2>
+          {onHide && (
+            <button
+              onClick={onHide}
+              className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            >
+              Скрыть
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
         <div className="flex flex-1 items-center justify-center p-4">
           <p className="text-center text-sm text-muted-foreground">
@@ -40,6 +50,15 @@ export default function ChatPanel({ messages, currentStepIndex, quizFeedback, lo
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <Bot className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold text-card-foreground">Чат</h2>
+        {onHide && (
+          <button
+            onClick={onHide}
+            className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+          >
+            Скрыть
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       <ScrollArea className="flex-1 p-3">
