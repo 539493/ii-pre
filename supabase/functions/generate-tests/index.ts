@@ -9,8 +9,9 @@ const corsHeaders = {
 
 const DEFAULT_QUESTION_COUNT = 100;
 const MAX_QUESTION_COUNT = 100;
-const MIN_QUESTION_COUNT = 20;
+const MIN_QUESTION_COUNT = 1;
 const MAX_BATCH_SIZE = 25;
+const MAX_FILL_ATTEMPTS = 6;
 
 interface GeneratedQuestion {
   id?: string;
@@ -107,7 +108,7 @@ Based on the student's learning history and progress, create parts of ONE comple
 ${progressContext}
 ${historyContext}
 
-The final result must become ONE standalone test with about ${desiredQuestionCount} questions in total.
+The final result must become ONE standalone test with EXACTLY ${desiredQuestionCount} questions in total.
 You are currently generating only one batch of that large final test.
 
 Return STRICT JSON only:
@@ -141,16 +142,17 @@ Rules:
 - Sections are internal thematic groups inside the same final test
 - Each section should have 4-8 questions
 - Keep section names short and clear
-- Use type "text" unless another simple type is absolutely necessary`;
+- Use type "text" unless another simple type is absolutely necessary
+- IMPORTANT: when asked for a number of questions, respect that number exactly across the final test`;
 
     async function generateBatch(batchIndex: number, batchSize: number, existingTopics: string[]) {
       const userPrompt = topic
         ? `Create batch ${batchIndex + 1} of ${batchSizes.length} for the topic "${topic}".
-Generate about ${batchSize} questions for this batch.
+Generate EXACTLY ${batchSize} questions for this batch.
 Avoid repeating these already covered topics if possible: ${existingTopics.join(", ") || "none"}.
 Keep the questions suitable for one large final test.`
         : `Create batch ${batchIndex + 1} of ${batchSizes.length} for one large comprehensive test.
-Generate about ${batchSize} questions for this batch.
+Generate EXACTLY ${batchSize} questions for this batch.
 Avoid repeating these already covered topics if possible: ${existingTopics.join(", ") || "none"}.
 Keep the questions suitable for one large final test.`;
 
@@ -188,15 +190,9 @@ Keep the questions suitable for one large final test.`;
 
     const mergedSections = new Map<string, GeneratedQuestion[]>();
     let finalTitle = "";
-    let absoluteQuestionIndex = 0;
 
-    for (let batchIndex = 0; batchIndex < batchSizes.length; batchIndex += 1) {
-      const batch = await generateBatch(batchIndex, batchSizes[batchIndex], Array.from(mergedSections.keys()));
-      if (!finalTitle && batch.test_title) {
-        finalTitle = batch.test_title;
-      }
-
-      for (const rawSection of batch.sections || []) {
+    const appendBatchSections = (sections: GeneratedSection[]) => {
+      for (const rawSection of sections) {
         const topicName = normalizeTopicName(rawSection?.topic || "", mergedSections.size);
         if (!mergedSections.has(topicName)) {
           mergedSections.set(topicName, []);
@@ -205,28 +201,84 @@ Keep the questions suitable for one large final test.`;
         for (const rawQuestion of rawSection?.questions || []) {
           mergedSections.get(topicName)!.push({
             ...rawQuestion,
-            id: `q-${absoluteQuestionIndex + 1}`,
             type: rawQuestion.type || "text",
           });
-          absoluteQuestionIndex += 1;
         }
       }
+    };
+
+    for (let batchIndex = 0; batchIndex < batchSizes.length; batchIndex += 1) {
+      const batch = await generateBatch(batchIndex, batchSizes[batchIndex], Array.from(mergedSections.keys()));
+      if (!finalTitle && batch.test_title) {
+        finalTitle = batch.test_title;
+      }
+      appendBatchSections(batch.sections || []);
     }
 
-    const finalizedSections = Array.from(mergedSections.entries())
+    let finalizedSections = Array.from(mergedSections.entries())
       .map(([sectionTopic, sectionQuestions]) => ({
         topic: sectionTopic,
         questions: sectionQuestions,
       }))
       .filter((section) => section.questions.length > 0);
 
+    let currentCount = finalizedSections.reduce((total, section) => total + section.questions.length, 0);
+
+    let fillAttempt = 0;
+    while (currentCount < desiredQuestionCount && fillAttempt < MAX_FILL_ATTEMPTS) {
+      const missingCount = desiredQuestionCount - currentCount;
+      const fillBatchSize = Math.min(MAX_BATCH_SIZE, missingCount);
+      const fillBatch = await generateBatch(batchSizes.length + fillAttempt, fillBatchSize, finalizedSections.map((section) => section.topic));
+      if (!finalTitle && fillBatch.test_title) {
+        finalTitle = fillBatch.test_title;
+      }
+
+      const beforeCount = currentCount;
+      appendBatchSections(fillBatch.sections || []);
+      finalizedSections = Array.from(mergedSections.entries())
+        .map(([sectionTopic, sectionQuestions]) => ({
+          topic: sectionTopic,
+          questions: sectionQuestions,
+        }))
+        .filter((section) => section.questions.length > 0);
+      currentCount = finalizedSections.reduce((total, section) => total + section.questions.length, 0);
+
+      if (currentCount === beforeCount) {
+        fillAttempt += 1;
+        continue;
+      }
+
+      fillAttempt += 1;
+    }
+
+    let remainingQuestions = desiredQuestionCount;
+    finalizedSections = finalizedSections
+      .map((section) => {
+        if (remainingQuestions <= 0) {
+          return { ...section, questions: [] };
+        }
+
+        const limitedQuestions = section.questions.slice(0, remainingQuestions);
+        remainingQuestions -= limitedQuestions.length;
+        return {
+          ...section,
+          questions: limitedQuestions,
+        };
+      })
+      .filter((section) => section.questions.length > 0);
+
+    let absoluteQuestionIndex = 0;
     const flattenedQuestions = finalizedSections.flatMap((section, sectionIndex) =>
-      section.questions.map((question, questionIndex) => ({
-        ...question,
-        topic: section.topic,
-        section_index: sectionIndex,
-        question_index: questionIndex,
-      })),
+      section.questions.map((question, questionIndex) => {
+        absoluteQuestionIndex += 1;
+        return {
+          ...question,
+          id: `q-${absoluteQuestionIndex}`,
+          topic: section.topic,
+          section_index: sectionIndex,
+          question_index: questionIndex,
+        };
+      }),
     );
 
     if ((finalTitle || topic || subjectName || subjectId) && flattenedQuestions.length > 0 && deviceId) {

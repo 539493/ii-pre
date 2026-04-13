@@ -198,7 +198,7 @@ export default function SubjectWorkspace() {
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: `📋 Готово! Я создал тест "${testTitle}" примерно на ${questionsCount} вопросов в одном блоке с разбивкой по темам. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
+        content: `📋 Готово! Я создал тест "${testTitle}" на ${questionsCount} вопросов в одном блоке с разбивкой по темам. Перейди в раздел «Мои тесты» в боковом меню, чтобы начать! 🎯`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
