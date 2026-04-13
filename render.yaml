@@ -6,9 +6,9 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_SUPABASE_URL
-        value: https://xtuyqpemvijhqcoklhjb.supabase.co
+        value: https://ddnxyygdnthgsxkjrfcv.supabase.co
       - key: VITE_SUPABASE_PUBLISHABLE_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0dXlxcGVtdmlqaHFjb2tsaGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDc1MTUsImV4cCI6MjA5MDgyMzUxNX0.ZYPK-FfMBiuFAp8KEiB14HjnGg_C-z-WdJdmAieOCMs
+        value: sb_publishable_mHQwh7Fm9PgGxAqqp6g-kw_qvEi1DeY
     routes:
       - type: rewrite
         source: /*
