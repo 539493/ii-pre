@@ -71,7 +71,7 @@ serve(async (req) => {
   }
 
   try {
-    const { subjectId, subjectName, topic, deviceId, history } = await req.json();
+    const { subjectId, subjectName, topic, deviceId, history, desiredQuestionCount: desiredQuestionCountRaw } = await req.json();
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -101,7 +101,12 @@ serve(async (req) => {
       ? `Recent chat topics:\n${history.slice(-10).map((h: { content: string }) => `- ${h.content}`).join("\n")}`
       : "";
 
-    const desiredQuestionCount = parseDesiredQuestionCount(topic);
+    const normalizedDesired = Number.isFinite(desiredQuestionCountRaw)
+      ? Number(desiredQuestionCountRaw)
+      : null;
+    const desiredQuestionCount = normalizedDesired !== null
+      ? Math.min(MAX_QUESTION_COUNT, Math.max(MIN_QUESTION_COUNT, normalizedDesired))
+      : parseDesiredQuestionCount(topic);
     const batchSizes = buildBatchSizes(desiredQuestionCount);
 
     const baseSystemPrompt = `You are a test generator for subject: ${subjectName || subjectId}.
@@ -301,7 +306,7 @@ Keep the questions suitable for one large final test.`;
         got: currentCount,
         expected: desiredQuestionCount,
       }), {
-        status: 502,
+        status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
