@@ -145,16 +145,6 @@ export default function SubjectWorkspace() {
     });
   })();
 
-  function parseRequestedQuestionCount(text: string) {
-    const direct = text.match(/(\d+)\s*(?:вопрос|вопроса|вопросов|questions?)/i);
-    const onTest = text.match(/(?:тест|экзамен|викторин[аы])\s*на\s*(\d+)/i);
-    const fallback = direct || onTest || text.match(/(?:тест|экзамен|викторин[аы]).*?(\d+)/i);
-    if (!fallback) return null;
-    const value = Number(fallback[1]);
-    if (!Number.isFinite(value)) return null;
-    return Math.max(1, Math.min(100, value));
-  }
-
   async function handleTeach() {
     const textPrompt = prompt.trim();
     if (!textPrompt && !attachedImage) {
@@ -182,7 +172,6 @@ export default function SubjectWorkspace() {
     const isTestPlanRequest = /план\s*(обучения|тест)|составь.*тест|создай.*тест|подготов.*тест/i.test(textPrompt);
 
     if (isTestPlanRequest) {
-      const desiredQuestionCount = parseRequestedQuestionCount(textPrompt);
       const { data, error: err } = await supabase.functions.invoke("generate-tests", {
         body: {
           subjectId: subject.id,
@@ -190,14 +179,13 @@ export default function SubjectWorkspace() {
           topic: textPrompt,
           deviceId,
           history: conversationHistory,
-          desiredQuestionCount: desiredQuestionCount ?? undefined,
         },
       });
       setLoading(false);
       setAttachedImage(null);
 
       if (err) {
-        setError("Ошибка создания тестов. Попробуй ещё раз через пару секунд.");
+        setError("Ошибка создания тестов");
         return;
       }
 
