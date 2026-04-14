@@ -94,11 +94,11 @@ serve(async (req) => {
       .limit(50);
 
     const progressContext = progress?.length
-      ? `Progress:\n${progress.slice(0, 5).map((p) => `- ${p.topic}: ${p.correct_answers}/${p.total_questions}`).join("\n")}`
-      : "No progress data.";
+      ? `Student progress:\n${progress.map((p) => `- ${p.topic}: ${p.correct_answers}/${p.total_questions} correct`).join("\n")}`
+      : "No previous progress data.";
 
     const historyContext = Array.isArray(history) && history.length
-      ? `Recent topics:\n${history.slice(-3).map((h: { content: string }) => `- ${h.content}`).join("\n")}`
+      ? `Recent chat topics:\n${history.slice(-10).map((h: { content: string }) => `- ${h.content}`).join("\n")}`
       : "";
 
     const normalizedDesired = Number.isFinite(desiredQuestionCountRaw)
@@ -107,18 +107,20 @@ serve(async (req) => {
     const desiredQuestionCount = normalizedDesired !== null
       ? Math.min(MAX_QUESTION_COUNT, Math.max(MIN_QUESTION_COUNT, normalizedDesired))
       : parseDesiredQuestionCount(topic);
-    const batchSizes = desiredQuestionCount <= 25 ? [desiredQuestionCount] : buildBatchSizes(desiredQuestionCount);
+    const batchSizes = buildBatchSizes(desiredQuestionCount);
 
-    const baseSystemPrompt = `You generate tests for subject: ${subjectName || subjectId}.
-Create ONE test with EXACTLY ${desiredQuestionCount} questions total.
-Keep output SHORT and compact (low token mode).
+    const baseSystemPrompt = `You are a test generator for subject: ${subjectName || subjectId}.
+Based on the student's learning history and progress, create parts of ONE complete test.
 
 ${progressContext}
 ${historyContext}
 
+The final result must become ONE standalone test with EXACTLY ${desiredQuestionCount} questions in total.
+You are currently generating only one batch of that large final test.
+
 Return STRICT JSON only:
 {
-  "test_title": "короткое название",
+  "test_title": "название теста с эмодзи",
   "sections": [
     {
       "topic": "Название темы",
@@ -127,8 +129,8 @@ Return STRICT JSON only:
           "id": "q1",
           "question": "Вопрос?",
           "type": "text",
-          "correct_answer": "ответ",
-          "hint": "краткая подсказка"
+          "correct_answer": "правильный ответ",
+          "hint": "подсказка при ошибке"
         }
       ]
     }
@@ -136,12 +138,19 @@ Return STRICT JSON only:
 }
 
 Rules:
+- Questions should progress from easy to hard
+- Include a mix of types: factual, application, analysis
+- Make questions specific and testable
+- Hints should guide without revealing the answer
 - All text in Russian (except English subject where questions/answers are in English)
-- Keep questions short
-- Hints short, 3-6 words
-- Use type "text"
-- Sections are internal groups inside ONE test
-- Respect the requested question count exactly`;
+- Include emojis in the test title
+- Return content for ONE batch only, but preserve the same overall test style
+- The final output in the app must remain ONE test, not multiple tests
+- Sections are internal thematic groups inside the same final test
+- Each section should have 4-8 questions
+- Keep section names short and clear
+- Use type "text" unless another simple type is absolutely necessary
+- IMPORTANT: when asked for a number of questions, respect that number exactly across the final test`;
 
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -188,13 +197,12 @@ Keep the questions suitable for one large final test.`;
                   parts: [{ text: userPrompt }],
                 },
               ],
-            generationConfig: {
-              temperature: 0.4,
-              response_mime_type: "application/json",
-              max_output_tokens: 1200,
-            },
-          }),
-        });
+              generationConfig: {
+                temperature: 0.4,
+                response_mime_type: "application/json",
+              },
+            }),
+          });
 
           if (aiRes.ok) {
             aiJson = await aiRes.json();
