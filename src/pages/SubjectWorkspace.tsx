@@ -155,6 +155,8 @@ export default function SubjectWorkspace() {
     return Math.max(1, Math.min(100, value));
   }
 
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
   async function handleTeach() {
     const textPrompt = prompt.trim();
     if (!textPrompt && !attachedImage) {
@@ -183,21 +185,44 @@ export default function SubjectWorkspace() {
 
     if (isTestPlanRequest) {
       const desiredQuestionCount = parseRequestedQuestionCount(textPrompt);
-      const { data, error: err } = await supabase.functions.invoke("generate-tests", {
-        body: {
-          subjectId: subject.id,
-          subjectName: subject.name,
-          topic: textPrompt,
-          deviceId,
-          history: conversationHistory,
-          desiredQuestionCount: desiredQuestionCount ?? undefined,
-        },
-      });
+      let data: any = null;
+      let err: any = null;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const res = await supabase.functions.invoke("generate-tests", {
+          body: {
+            subjectId: subject.id,
+            subjectName: subject.name,
+            topic: textPrompt,
+            deviceId,
+            history: conversationHistory,
+            desiredQuestionCount: desiredQuestionCount ?? undefined,
+          },
+        });
+        data = res.data;
+        err = res.error;
+        if (!err) break;
+
+        const status = (err as any)?.context?.status;
+        const isRetryable = status === 429 || status === 502 || status === 422;
+        if (!isRetryable || attempt === 2) break;
+        await sleep(700 * (attempt + 1));
+      }
       setLoading(false);
       setAttachedImage(null);
 
       if (err) {
-        const details = (data as any)?.error || err.message || "Неизвестная ошибка";
+        let details = err.message || "Неизвестная ошибка";
+        const contextBody = (err as any)?.context?.body;
+        if (contextBody) {
+          try {
+            const parsed = JSON.parse(contextBody);
+            details = parsed?.error || details;
+          } catch {
+            details = String(contextBody) || details;
+          }
+        } else if ((data as any)?.error) {
+          details = (data as any)?.error;
+        }
         setError(`Ошибка создания тестов: ${details}`);
         return;
       }
