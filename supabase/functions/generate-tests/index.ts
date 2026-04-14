@@ -71,12 +71,12 @@ serve(async (req) => {
   try {
     const { subjectId, subjectName, topic, deviceId, history } = await req.json();
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!lovableApiKey) {
-      return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
+    if (!geminiApiKey) {
+      return new Response(JSON.stringify({ error: "Missing GEMINI_API_KEY" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -156,31 +156,39 @@ Generate EXACTLY ${batchSize} questions for this batch.
 Avoid repeating these already covered topics if possible: ${existingTopics.join(", ") || "none"}.
 Keep the questions suitable for one large final test.`;
 
-      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          temperature: 0.4,
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: baseSystemPrompt },
-            { role: "user", content: userPrompt },
+          system_instruction: {
+            parts: [{ text: baseSystemPrompt }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: userPrompt }],
+            },
           ],
+          generationConfig: {
+            temperature: 0.4,
+            response_mime_type: "application/json",
+          },
         }),
       });
 
       if (!aiRes.ok) {
         if (aiRes.status === 429) throw new Error("RATE_LIMIT");
-        if (aiRes.status === 402) throw new Error("OUT_OF_CREDITS");
         throw new Error(`AI_ERROR_${aiRes.status}`);
       }
 
       const aiJson = await aiRes.json();
-      const content = aiJson?.choices?.[0]?.message?.content;
+      const content = aiJson?.candidates?.[0]?.content?.parts
+        ?.map((part: { text?: string }) => part?.text || "")
+        .join("")
+        .trim();
       try {
         return JSON.parse(content) as GeneratedBatch;
       } catch {

@@ -109,12 +109,12 @@ serve(async (req) => {
       });
     }
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!lovableApiKey) {
-      return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY secret" }), {
+    if (!geminiApiKey) {
+      return new Response(JSON.stringify({ error: "Missing GEMINI_API_KEY secret" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -122,48 +122,55 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const systemPrompt = buildSystemPrompt(subjectId, subjectName);
+    const historyText = Array.isArray(history) && history.length
+      ? `Conversation history:\n${history.slice(-16).map((msg: { role: string; content: string }) => `- ${msg.role}: ${msg.content}`).join("\n")}\n\n`
+      : "";
 
-    const aiMessages: Array<{ role: string; content: any }> = [
-      { role: "system", content: systemPrompt },
+    // Build user message
+    const userText = `${historyText}User request:\n${prompt}\n\nUser knowledge/context:\n${knowledge || "No custom knowledge provided."}\n\nCreate a board-based teaching response.\nReturn strict JSON only.`;
+    const userParts: Array<{ text?: string; inline_data?: { mime_type: string; data: string } }> = [
+      { text: userText },
     ];
 
-    // Add conversation history (more context for continuity)
-    if (Array.isArray(history)) {
-      const recentHistory = history.slice(-16);
-      for (const msg of recentHistory) {
-        aiMessages.push({
-          role: msg.role === "user" ? "user" : "assistant",
-          content: msg.content,
-        });
+    if (image && typeof image === "string") {
+      if (image.startsWith("data:")) {
+        const match = image.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          userParts.push({
+            inline_data: {
+              mime_type: match[1],
+              data: match[2],
+            },
+          });
+        } else {
+          userParts.push({ text: `Image provided (unparsed data url).` });
+        }
+      } else {
+        userParts.push({ text: `Image URL: ${image}` });
       }
     }
 
-    // Build user message
-    let userContent: any;
-    if (image && typeof image === "string") {
-      userContent = [
-        { type: "text", text: `User request:\n${prompt}\n\nUser knowledge/context:\n${knowledge || "No custom knowledge provided."}\n\nCreate a board-based teaching response.\nReturn strict JSON only.` },
-        { type: "image_url", image_url: { url: image } },
-      ];
-    } else {
-      userContent = `User request:\n${prompt}\n\nUser knowledge/context:\n${knowledge || "No custom knowledge provided."}\n\nCreate a board-based teaching response.\nReturn strict JSON only.`;
-    }
+    const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
 
-    aiMessages.push({ role: "user", content: userContent });
-
-    const model = "google/gemini-2.5-flash";
-
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${lovableApiKey}`,
       },
       body: JSON.stringify({
-        model,
-        temperature: 0.35,
-        response_format: { type: "json_object" },
-        messages: aiMessages,
+        system_instruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        contents: [
+          {
+            role: "user",
+            parts: userParts,
+          },
+        ],
+        generationConfig: {
+          temperature: 0.35,
+          response_mime_type: "application/json",
+        },
       }),
     });
 
@@ -189,7 +196,10 @@ serve(async (req) => {
       });
     }
 
-    const content = aiJson?.choices?.[0]?.message?.content;
+    const content = aiJson?.candidates?.[0]?.content?.parts
+      ?.map((part: { text?: string }) => part?.text || "")
+      .join("")
+      .trim();
 
     if (!content) {
       return new Response(JSON.stringify({ error: "Empty AI response" }), {

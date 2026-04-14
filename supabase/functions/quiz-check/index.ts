@@ -21,9 +21,9 @@ serve(async (req) => {
       });
     }
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
-      return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!geminiApiKey) {
+      return new Response(JSON.stringify({ error: "Missing GEMINI_API_KEY" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -55,34 +55,41 @@ Rules:
 
 Subject: ${subjectId || "general"}`;
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${lovableApiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
+        system_instruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        contents: [
           {
             role: "user",
-            content: `Topic context: ${context || "general"}
+            parts: [{ text: `Topic context: ${context || "general"}
 
 Question: ${question}
 Student's answer: ${answer}
 This is attempt #${errCount + 1}
 
 Check if the answer is correct and respond with JSON. If the answer is wrong, give the learner the correct explanation, not just a hint.`,
+            }],
           },
         ],
+        generationConfig: {
+          temperature: 0.3,
+          response_mime_type: "application/json",
+        },
       }),
     });
 
     const aiJson = await aiRes.json();
-    const content = aiJson?.choices?.[0]?.message?.content;
+    const content = aiJson?.candidates?.[0]?.content?.parts
+      ?.map((part: { text?: string }) => part?.text || "")
+      .join("")
+      .trim();
 
     let parsed;
     try {
