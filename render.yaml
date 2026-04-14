@@ -8,7 +8,7 @@ services:
       - key: VITE_SUPABASE_URL
         value: https://ddnxyygdnthgsxkjrfcv.supabase.co
       - key: VITE_SUPABASE_PUBLISHABLE_KEY
-        value: sb_publishable_mHQwh7Fm9PgGxAqqp6g-kw_qvEi1DeY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkbnh5eWdkbnRoZ3N4a2pyZmN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjUxMDAsImV4cCI6MjA5MTUwMTEwMH0.DV92eLVtT-vXAVd6TacNrKdnfPEHow1lr_28expnClM
     routes:
       - type: rewrite
         source: /*

@@ -55,7 +55,7 @@ Rules:
 
 Subject: ${subjectId || "general"}`;
 
-    const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+    const model = Deno.env.get("GEMINI_MODEL") || "gemini-2.0-flash-lite";
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
       method: "POST",
       headers: {
@@ -86,6 +86,24 @@ Check if the answer is correct and respond with JSON. If the answer is wrong, gi
     });
 
     const aiJson = await aiRes.json();
+    if (!aiRes.ok) {
+      if (aiRes.status === 429) {
+        return new Response(JSON.stringify({ correct: false, message: "Квота Gemini API исчерпана для этого ключа. Нужен ключ с доступным лимитом или включённым биллингом." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (aiRes.status === 403) {
+        return new Response(JSON.stringify({ correct: false, message: "У этого Gemini API ключа нет доступа к выбранной модели." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ correct: false, message: `AI request failed (${aiRes.status})` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const content = aiJson?.candidates?.[0]?.content?.parts
       ?.map((part: { text?: string }) => part?.text || "")
       .join("")

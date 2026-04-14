@@ -150,7 +150,7 @@ serve(async (req) => {
       }
     }
 
-    const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+    const model = Deno.env.get("GEMINI_MODEL") || "gemini-2.0-flash-lite";
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
       method: "POST",
@@ -179,8 +179,14 @@ serve(async (req) => {
     if (!aiRes.ok) {
       const status = aiRes.status;
       if (status === 429) {
-        return new Response(JSON.stringify({ error: "Слишком много запросов, подожди немного" }), {
+        return new Response(JSON.stringify({ error: "Квота Gemini API исчерпана для этого ключа. Нужен ключ с доступным лимитом или включённым биллингом." }), {
           status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (status === 403) {
+        return new Response(JSON.stringify({ error: "У этого Gemini API ключа нет доступа к выбранной модели." }), {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

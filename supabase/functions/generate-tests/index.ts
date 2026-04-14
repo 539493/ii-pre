@@ -156,7 +156,7 @@ Generate EXACTLY ${batchSize} questions for this batch.
 Avoid repeating these already covered topics if possible: ${existingTopics.join(", ") || "none"}.
 Keep the questions suitable for one large final test.`;
 
-      const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+      const model = Deno.env.get("GEMINI_MODEL") || "gemini-2.0-flash-lite";
       const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
         method: "POST",
         headers: {
@@ -181,6 +181,7 @@ Keep the questions suitable for one large final test.`;
 
       if (!aiRes.ok) {
         if (aiRes.status === 429) throw new Error("RATE_LIMIT");
+        if (aiRes.status === 403) throw new Error("PERMISSION_DENIED");
         throw new Error(`AI_ERROR_${aiRes.status}`);
       }
 
@@ -316,8 +317,15 @@ Keep the questions suitable for one large final test.`;
     });
   } catch (error) {
     if (String(error) === "Error: RATE_LIMIT") {
-      return new Response(JSON.stringify({ error: "Слишком много запросов" }), {
+      return new Response(JSON.stringify({ error: "Квота Gemini API исчерпана для этого ключа. Нужен ключ с доступным лимитом или включённым биллингом." }), {
         status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (String(error) === "Error: PERMISSION_DENIED") {
+      return new Response(JSON.stringify({ error: "У этого Gemini API ключа нет доступа к выбранной модели." }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
