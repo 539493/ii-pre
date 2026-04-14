@@ -215,20 +215,8 @@ export default function SubjectWorkspace() {
         const contextBody = (err as any)?.context?.body;
         if (contextBody) {
           try {
-            if (typeof contextBody === "string") {
-              const parsed = JSON.parse(contextBody);
-              details = parsed?.error || details;
-            } else if (typeof contextBody?.getReader === "function") {
-              const text = await new Response(contextBody).text();
-              try {
-                const parsed = JSON.parse(text);
-                details = parsed?.error || text || details;
-              } catch {
-                details = text || details;
-              }
-            } else {
-              details = String(contextBody) || details;
-            }
+            const parsed = JSON.parse(contextBody);
+            details = parsed?.error || details;
           } catch {
             details = String(contextBody) || details;
           }
