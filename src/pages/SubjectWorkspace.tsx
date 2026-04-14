@@ -197,7 +197,8 @@ export default function SubjectWorkspace() {
       setAttachedImage(null);
 
       if (err) {
-        setError("Ошибка создания тестов. Попробуй ещё раз через пару секунд.");
+        const details = (data as any)?.error || err.message || "Неизвестная ошибка";
+        setError(`Ошибка создания тестов: ${details}`);
         return;
       }
 

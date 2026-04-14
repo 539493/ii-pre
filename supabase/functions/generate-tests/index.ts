@@ -11,7 +11,7 @@ const DEFAULT_QUESTION_COUNT = 100;
 const MAX_QUESTION_COUNT = 100;
 const MIN_QUESTION_COUNT = 1;
 const MAX_BATCH_SIZE = 25;
-const MAX_FILL_ATTEMPTS = 6;
+const MAX_FILL_ATTEMPTS = 12;
 
 interface GeneratedQuestion {
   id?: string;
@@ -276,7 +276,7 @@ Keep the questions suitable for one large final test.`;
     let fillAttempt = 0;
     while (currentCount < desiredQuestionCount && fillAttempt < MAX_FILL_ATTEMPTS) {
       const missingCount = desiredQuestionCount - currentCount;
-      const fillBatchSize = Math.min(MAX_BATCH_SIZE, missingCount);
+      const fillBatchSize = Math.min(10, missingCount);
       const fillBatch = await generateBatch(batchSizes.length + fillAttempt, fillBatchSize, finalizedSections.map((section) => section.topic));
       if (!finalTitle && fillBatch.test_title) {
         finalTitle = fillBatch.test_title;
@@ -297,6 +297,7 @@ Keep the questions suitable for one large final test.`;
         continue;
       }
 
+      await sleep(350);
       fillAttempt += 1;
     }
 
