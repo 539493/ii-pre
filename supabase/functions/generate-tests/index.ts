@@ -35,9 +35,11 @@ function parseDesiredQuestionCount(topic?: string) {
   if (!topic) return DEFAULT_QUESTION_COUNT;
 
   const directMatch = topic.match(/(\d+)\s*(?:вопрос|вопроса|вопросов|questions?)/i);
-  if (!directMatch) return DEFAULT_QUESTION_COUNT;
+  const testOnMatch = topic.match(/(?:тест|экзамен|викторин[аы])\s*на\s*(\d+)/i);
+  const fallbackMatch = directMatch || testOnMatch || topic.match(/(?:тест|экзамен|викторин[аы]).*?(\d+)/i);
+  if (!fallbackMatch) return DEFAULT_QUESTION_COUNT;
 
-  const requested = Number(directMatch[1]);
+  const requested = Number(fallbackMatch[1]);
   if (!Number.isFinite(requested)) return DEFAULT_QUESTION_COUNT;
 
   return Math.min(MAX_QUESTION_COUNT, Math.max(MIN_QUESTION_COUNT, requested));
@@ -145,6 +147,8 @@ Rules:
 - Use type "text" unless another simple type is absolutely necessary
 - IMPORTANT: when asked for a number of questions, respect that number exactly across the final test`;
 
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
     async function generateBatch(batchIndex: number, batchSize: number, existingTopics: string[]) {
       const userPrompt = topic
         ? `Create batch ${batchIndex + 1} of ${batchSizes.length} for the topic "${topic}".
@@ -170,38 +174,47 @@ Keep the questions suitable for one large final test.`;
       let aiJson: any = null;
       let lastStatus = 0;
 
+      const maxRetriesPerModel = 3;
       for (const model of fallbackModels) {
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: baseSystemPrompt }],
+        for (let attempt = 0; attempt < maxRetriesPerModel; attempt += 1) {
+          const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: userPrompt }],
+            body: JSON.stringify({
+              system_instruction: {
+                parts: [{ text: baseSystemPrompt }],
               },
-            ],
-            generationConfig: {
-              temperature: 0.4,
-              response_mime_type: "application/json",
-            },
-          }),
-        });
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: userPrompt }],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.4,
+                response_mime_type: "application/json",
+              },
+            }),
+          });
 
-        if (aiRes.ok) {
-          aiJson = await aiRes.json();
-          lastStatus = 200;
-          break;
+          if (aiRes.ok) {
+            aiJson = await aiRes.json();
+            lastStatus = 200;
+            break;
+          }
+
+          lastStatus = aiRes.status;
+          if (aiRes.status === 429) {
+            await sleep(900 * (attempt + 1));
+            continue;
+          }
+          if (aiRes.status === 404) break;
+          throw new Error(`AI_ERROR_${aiRes.status}`);
         }
 
-        lastStatus = aiRes.status;
-        if (aiRes.status === 429) throw new Error("RATE_LIMIT");
-        if (aiRes.status !== 404) throw new Error(`AI_ERROR_${aiRes.status}`);
+        if (aiJson) break;
       }
 
       if (!aiJson) {
@@ -280,6 +293,17 @@ Keep the questions suitable for one large final test.`;
       }
 
       fillAttempt += 1;
+    }
+
+    if (currentCount < desiredQuestionCount) {
+      return new Response(JSON.stringify({
+        error: "AI returned too few questions",
+        got: currentCount,
+        expected: desiredQuestionCount,
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     let remainingQuestions = desiredQuestionCount;
