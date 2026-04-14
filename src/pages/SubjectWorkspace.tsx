@@ -187,7 +187,7 @@ export default function SubjectWorkspace() {
       const desiredQuestionCount = parseRequestedQuestionCount(textPrompt);
       let data: any = null;
       let err: any = null;
-      for (let attempt = 0; attempt < 3; attempt += 1) {
+      for (let attempt = 0; attempt < 5; attempt += 1) {
         const res = await supabase.functions.invoke("generate-tests", {
           body: {
             subjectId: subject.id,
@@ -204,8 +204,8 @@ export default function SubjectWorkspace() {
 
         const status = (err as any)?.context?.status;
         const isRetryable = status === 429 || status === 502 || status === 422;
-        if (!isRetryable || attempt === 2) break;
-        await sleep(700 * (attempt + 1));
+        if (!isRetryable || attempt === 4) break;
+        await sleep(1200 * (attempt + 1));
       }
       setLoading(false);
       setAttachedImage(null);
