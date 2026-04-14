@@ -235,7 +235,10 @@ export default function SubjectWorkspace() {
         } else if ((data as any)?.error) {
           details = (data as any)?.error;
         }
-        setError(`Ошибка создания тестов: ${details}`);
+        const finalDetails = details === "Слишком много запросов"
+          ? "Слишком много запросов. Подожди 1–2 минуты и попробуй снова."
+          : details;
+        setError(`Ошибка создания тестов: ${finalDetails}`);
         return;
       }
 

@@ -179,7 +179,7 @@ Keep the questions suitable for one large final test.`;
       let aiJson: any = null;
       let lastStatus = 0;
 
-      const maxRetriesPerModel = 5;
+      const maxRetriesPerModel = 2;
       for (const model of fallbackModels) {
         for (let attempt = 0; attempt < maxRetriesPerModel; attempt += 1) {
           const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
@@ -212,8 +212,8 @@ Keep the questions suitable for one large final test.`;
 
           lastStatus = aiRes.status;
           if (aiRes.status === 429) {
-            await sleep(1500 * (attempt + 1));
-            continue;
+            // Fail fast on hard rate limits so the client can retry later
+            throw new Error("RATE_LIMIT");
           }
           if (aiRes.status === 404) break;
           throw new Error(`AI_ERROR_${aiRes.status}`);
