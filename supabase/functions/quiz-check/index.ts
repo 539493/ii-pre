@@ -55,77 +55,37 @@ Rules:
 
 Subject: ${subjectId || "general"}`;
 
-    const preferredModel = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
-    const fallbackModels = [
-      preferredModel,
-      "gemini-1.5-flash-002",
-      "gemini-1.5-flash-latest",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro-002",
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-lite",
-    ];
-
-    let aiJson: any = null;
-    let lastStatus = 0;
-
-    for (const model of fallbackModels) {
-      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        system_instruction: {
+          parts: [{ text: systemPrompt }],
         },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `Topic context: ${context || "general"}
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: `Topic context: ${context || "general"}
 
 Question: ${question}
 Student's answer: ${answer}
 This is attempt #${errCount + 1}
 
 Check if the answer is correct and respond with JSON. If the answer is wrong, give the learner the correct explanation, not just a hint.`,
-              }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.3,
-            response_mime_type: "application/json",
+            }],
           },
-        }),
-      });
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          response_mime_type: "application/json",
+        },
+      }),
+    });
 
-      if (aiRes.ok) {
-        aiJson = await aiRes.json();
-        lastStatus = 200;
-        break;
-      }
-
-      lastStatus = aiRes.status;
-      if (aiRes.status === 429) {
-        return new Response(JSON.stringify({ error: "Слишком много запросов, подожди немного" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiRes.status !== 404) {
-        return new Response(JSON.stringify({ error: `AI request failed (${aiRes.status})` }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
-
-    if (!aiJson) {
-      return new Response(JSON.stringify({ error: `AI request failed (${lastStatus || 500})` }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const aiJson = await aiRes.json();
     const content = aiJson?.candidates?.[0]?.content?.parts
       ?.map((part: { text?: string }) => part?.text || "")
       .join("")

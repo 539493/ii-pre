@@ -156,58 +156,35 @@ Generate EXACTLY ${batchSize} questions for this batch.
 Avoid repeating these already covered topics if possible: ${existingTopics.join(", ") || "none"}.
 Keep the questions suitable for one large final test.`;
 
-      const preferredModel = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
-      const fallbackModels = [
-        preferredModel,
-        "gemini-1.5-flash-002",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro-002",
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-      ];
-
-      let aiJson: any = null;
-      let lastStatus = 0;
-
-      for (const model of fallbackModels) {
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const model = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: baseSystemPrompt }],
           },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: baseSystemPrompt }],
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: userPrompt }],
             },
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: userPrompt }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.4,
-              response_mime_type: "application/json",
-            },
-          }),
-        });
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            response_mime_type: "application/json",
+          },
+        }),
+      });
 
-        if (aiRes.ok) {
-          aiJson = await aiRes.json();
-          lastStatus = 200;
-          break;
-        }
-
-        lastStatus = aiRes.status;
+      if (!aiRes.ok) {
         if (aiRes.status === 429) throw new Error("RATE_LIMIT");
-        if (aiRes.status !== 404) throw new Error(`AI_ERROR_${aiRes.status}`);
+        throw new Error(`AI_ERROR_${aiRes.status}`);
       }
 
-      if (!aiJson) {
-        throw new Error(`AI_ERROR_${lastStatus || 500}`);
-      }
-
+      const aiJson = await aiRes.json();
       const content = aiJson?.candidates?.[0]?.content?.parts
         ?.map((part: { text?: string }) => part?.text || "")
         .join("")
