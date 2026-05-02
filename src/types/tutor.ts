@@ -146,4 +146,9 @@ export type Profile = {
   age: string;
   grade: string;
   bio: string;
+  educationLevel: string;
+  studyGoal: string;
+  interests: string[];
+  notificationsEnabled: boolean;
+  memberSince: string;
 };

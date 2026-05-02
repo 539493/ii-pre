@@ -1,85 +1,326 @@
-import { useState } from "react";
-import { User, Save, CheckCircle2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { BookOpen, Import, PencilLine, Settings, Target, UserRound, Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import DashboardShell, { DashboardPanel } from "@/components/dashboard/DashboardShell";
+import { ProfileAvatarIllustration } from "@/components/dashboard/DashboardIllustrations";
 import { parseProfile, PROFILE_KEY } from "@/lib/profile";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/tutor";
 
+function formatMemberSince(value: string) {
+  if (!value) return "—";
+
+  return new Date(value).toLocaleDateString("ru-RU", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function getFilledCount(profile: Profile) {
+  return [
+    profile.name,
+    profile.grade,
+    profile.educationLevel,
+    profile.bio,
+    profile.studyGoal,
+    profile.interests.length > 0 ? "yes" : "",
+  ].filter(Boolean).length;
+}
+
+function DetailCell({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="text-[13px] text-[#8a97b2]">{label}</p>
+      <p className="mt-2 text-[18px] font-medium text-[#233a67]">{value || "—"}</p>
+    </div>
+  );
+}
+
+function ProfileOptionCard({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  action,
+}: {
+  icon: typeof UserRound;
+  title: string;
+  description: string;
+  badge: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <DashboardPanel className="p-5">
+      <div className="flex items-start gap-4">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#f7f9fd_0%,#edf2fb_70%)] text-[#96a6c3]">
+          <Icon className="h-6 w-6" strokeWidth={1.7} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+            {title}
+          </h3>
+          <p className="mt-2 text-[14px] leading-7 text-[#7282a0]">{description}</p>
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-[#ece6da] bg-[#fdfbf6] px-3 py-1.5 text-[12px] font-medium text-[#5d7095]">
+              {badge}
+            </span>
+            {action}
+          </div>
+        </div>
+      </div>
+    </DashboardPanel>
+  );
+}
+
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile>(() => parseProfile(localStorage.getItem(PROFILE_KEY)));
-  const [saved, setSaved] = useState(false);
+  const [draft, setDraft] = useState<Profile>(profile);
+  const [showEdit, setShowEdit] = useState(false);
+
+  const filledCount = useMemo(() => getFilledCount(profile), [profile]);
+  const profileReady = filledCount >= 4;
+
+  const openModal = () => {
+    setDraft(profile);
+    setShowEdit(true);
+  };
 
   const handleSave = () => {
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    const normalized: Profile = {
+      ...draft,
+      name: draft.name.trim(),
+      age: draft.age.trim(),
+      grade: draft.grade.trim(),
+      bio: draft.bio.trim(),
+      educationLevel: draft.educationLevel.trim(),
+      studyGoal: draft.studyGoal.trim(),
+      interests: draft.interests.map((item) => item.trim()).filter(Boolean),
+      memberSince: draft.memberSince || profile.memberSince || new Date().toISOString(),
+    };
+
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(normalized));
+    setProfile(normalized);
+    setShowEdit(false);
+  };
+
+  const toggleNotifications = () => {
+    const nextProfile = {
+      ...profile,
+      notificationsEnabled: !profile.notificationsEnabled,
+      memberSince: profile.memberSince || new Date().toISOString(),
+    };
+
+    setProfile(nextProfile);
+    setDraft(nextProfile);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
   };
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Профиль</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Информация о себе</p>
-      </div>
-
-      <div className="max-w-lg space-y-4">
-        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-lg">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-            <User className="h-8 w-8 text-primary" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-card-foreground">{profile.name || "Ученик"}</p>
-            <p className="text-sm text-muted-foreground">{profile.grade ? `${profile.grade} класс` : "Класс не указан"}</p>
-          </div>
+    <DashboardShell
+      title="Профиль"
+      description="Управляйте своими личными настройками и учебными предпочтениями"
+      overviewItems={[
+        { label: "Всего", value: filledCount, tone: "blue" },
+        { label: "Активно", value: profile.notificationsEnabled ? 1 : 0, tone: "blue" },
+        { label: "Завершено", value: profileReady ? 1 : 0, tone: "amber" },
+        { label: "Обновлено", value: formatMemberSince(profile.memberSince), tone: "slate" },
+      ]}
+      quickActions={[
+        { label: "Добавить", icon: PencilLine, onClick: openModal },
+        { label: "Импорт", icon: Import, onClick: () => navigate("/materials") },
+        { label: "Настройки", icon: Settings, onClick: openModal },
+      ]}
+      recentActivity={profile.memberSince ? (
+        <div className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
+          <p className="text-[14px] font-medium text-[#223761]">
+            Профиль обновлён
+          </p>
+          <p className="mt-1 text-[12px] text-[#8a97b2]">{formatMemberSince(profile.memberSince)}</p>
         </div>
+      ) : undefined}
+    >
+      <DashboardPanel className="p-5 sm:p-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex flex-col gap-5 sm:flex-row">
+            <ProfileAvatarIllustration />
 
-        <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-lg">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Имя</label>
-            <input
-              value={profile.name}
-              onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Как тебя зовут?"
-              className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
-            />
-          </div>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Возраст</label>
-              <input
-                value={profile.age}
-                onChange={(e) => setProfile((p) => ({ ...p, age: e.target.value }))}
-                placeholder="14"
-                className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Класс</label>
-              <input
-                value={profile.grade}
-                onChange={(e) => setProfile((p) => ({ ...p, grade: e.target.value }))}
-                placeholder="8"
-                className="w-full rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
-              />
+            <div className="min-w-0">
+              <h2 className="font-serif text-[20px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+                {profileReady ? profile.name || "Профиль ученика" : "Профиль не заполнен"}
+              </h2>
+              <p className="mt-2 max-w-[520px] text-[15px] leading-7 text-[#7282a0]">
+                {profileReady
+                  ? profile.bio || "Здесь появится ваше краткое описание и учебные предпочтения."
+                  : "Заполните информацию о себе, чтобы мы могли подбирать материалы и рекомендации персонально для вас."}
+              </p>
             </div>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">О себе</label>
-            <textarea
-              value={profile.bio}
-              onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
-              placeholder="Что ты любишь изучать, твои цели…"
-              rows={3}
-              className="w-full resize-none rounded-xl border border-border bg-secondary px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
-            />
-          </div>
+
           <button
-            onClick={handleSave}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            type="button"
+            onClick={openModal}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[#d7e2fb] bg-white px-5 text-[15px] font-medium text-[#2563eb] transition hover:bg-[#f6f9ff]"
           >
-            {saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {saved ? "Сохранено!" : "Сохранить"}
+            <PencilLine className="h-4.5 w-4.5" strokeWidth={1.8} />
+            Заполнить профиль
           </button>
         </div>
+
+        <div className="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4">
+          <DetailCell label="Имя" value={profile.name} />
+          <DetailCell label="Уровень образования" value={profile.educationLevel} />
+          <DetailCell label="Класс / Курс" value={profile.grade} />
+          <DetailCell label="Участник с" value={formatMemberSince(profile.memberSince)} />
+        </div>
+      </DashboardPanel>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ProfileOptionCard
+          icon={UserRound}
+          title="Настройки аккаунта"
+          description="Управляйте личными данными, паролем и безопасностью."
+          badge={profileReady ? "Настроено" : "Не настроено"}
+        />
+        <ProfileOptionCard
+          icon={Target}
+          title="Учебные цели"
+          description="Определите цели и отслеживайте свой прогресс в обучении."
+          badge={profile.studyGoal || "Цели не заданы"}
+        />
+        <ProfileOptionCard
+          icon={BookOpen}
+          title="Интересующие предметы"
+          description="Выберите предметы, которые вам интересны."
+          badge={profile.interests.length > 0 ? profile.interests.join(", ") : "Не выбрано"}
+        />
+        <DashboardPanel className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#f7f9fd_0%,#edf2fb_70%)] text-[#96a6c3]">
+              <Bell className="h-6 w-6" strokeWidth={1.7} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+                Настройки уведомлений
+              </h3>
+              <p className="mt-2 text-[14px] leading-7 text-[#7282a0]">
+                Выберите, какие уведомления вы хотите получать.
+              </p>
+
+              <div className="mt-5 flex items-center justify-between gap-3 rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
+                <span className="text-[14px] font-medium text-[#233a67]">Email-уведомления</span>
+                <button
+                  type="button"
+                  onClick={toggleNotifications}
+                  className={cn(
+                    "relative h-8 w-14 rounded-full transition",
+                    profile.notificationsEnabled ? "bg-[#2563eb]" : "bg-[#e5eaf3]",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-1 h-6 w-6 rounded-full bg-white shadow-[0_8px_18px_rgba(15,23,42,0.15)] transition",
+                      profile.notificationsEnabled ? "left-7" : "left-1",
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </DashboardPanel>
       </div>
-    </div>
+
+      {showEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#10244d]/25 px-4 backdrop-blur-md">
+          <DashboardPanel className="w-full max-w-2xl p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9aa7bf]">
+              Редактирование
+            </p>
+            <h2 className="mt-3 font-serif text-[28px] font-semibold tracking-[-0.04em] text-[#132b5b]">
+              Заполнить профиль
+            </h2>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <input
+                value={draft.name}
+                onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+                placeholder="Имя"
+                className="rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+              <input
+                value={draft.educationLevel}
+                onChange={(event) => setDraft((current) => ({ ...current, educationLevel: event.target.value }))}
+                placeholder="Уровень образования"
+                className="rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+              <input
+                value={draft.grade}
+                onChange={(event) => setDraft((current) => ({ ...current, grade: event.target.value }))}
+                placeholder="Класс / Курс"
+                className="rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+              <input
+                value={draft.age}
+                onChange={(event) => setDraft((current) => ({ ...current, age: event.target.value }))}
+                placeholder="Возраст"
+                className="rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+            </div>
+
+            <div className="mt-3 space-y-3">
+              <textarea
+                value={draft.bio}
+                onChange={(event) => setDraft((current) => ({ ...current, bio: event.target.value }))}
+                placeholder="Коротко о себе"
+                rows={4}
+                className="w-full rounded-[24px] border border-[#e7e1d8] bg-white px-4 py-3 text-[14px] leading-7 text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+              <textarea
+                value={draft.studyGoal}
+                onChange={(event) => setDraft((current) => ({ ...current, studyGoal: event.target.value }))}
+                placeholder="Учебные цели"
+                rows={3}
+                className="w-full rounded-[24px] border border-[#e7e1d8] bg-white px-4 py-3 text-[14px] leading-7 text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+              <input
+                value={draft.interests.join(", ")}
+                onChange={(event) => setDraft((current) => ({
+                  ...current,
+                  interests: event.target.value.split(",").map((item) => item.trim()).filter(Boolean),
+                }))}
+                placeholder="Интересующие предметы через запятую"
+                className="rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              />
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => {
+                  setDraft(profile);
+                  setShowEdit(false);
+                }}
+                className="flex-1 rounded-2xl border border-[#e6dfd0] bg-white px-4 py-2.5 text-[14px] font-medium text-[#667085] transition hover:bg-[#f8f5ee] hover:text-[#111827]"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="flex-1 rounded-2xl bg-[#175cdf] px-4 py-2.5 text-[14px] font-semibold text-white shadow-[0_18px_35px_rgba(23,92,223,0.22)] transition hover:bg-[#144fc1]"
+              >
+                Сохранить профиль
+              </button>
+            </div>
+          </DashboardPanel>
+        </div>
+      )}
+    </DashboardShell>
   );
 }

@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  GraduationCap,
   Library,
   User,
   type LucideIcon,
@@ -27,19 +26,39 @@ const navItems: NavItem[] = [
   { label: "Профиль", icon: User, path: "/profile" },
 ];
 
+function TutorCrest() {
+  return (
+    <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
+      <path
+        d="M24 4 36 9v12.8c0 8.1-4.8 15.5-12 18.8-7.2-3.3-12-10.7-12-18.8V9L24 4Z"
+        stroke="#18356B"
+        strokeWidth="2.1"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M24 10.5 31.5 13v8.4c0 4.8-2.9 9.2-7.5 11.3-4.6-2.1-7.5-6.5-7.5-11.3V13l7.5-2.5Z"
+        stroke="#D5A64B"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.5 18.2c1.8-1.1 3.7-1.6 5.5-1.6 1.8 0 3.7.5 5.5 1.6v7.1c-1.8-1-3.7-1.5-5.5-1.5-1.8 0-3.7.5-5.5 1.5v-7.1Z"
+        stroke="#18356B"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+      <path d="M24 16.6v8.4" stroke="#18356B" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function BrandMark() {
   return (
     <div className="flex items-center gap-3">
-      <div className="relative grid h-9 w-9 place-items-center rounded-[18px] border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-        <GraduationCap className="h-4.5 w-4.5" strokeWidth={1.9} />
-        <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#2563eb] ring-[3px] ring-white" />
-      </div>
-      <div>
-        <div className="font-serif text-[22px] font-semibold leading-none tracking-[-0.03em] text-[#101828]">
+      <TutorCrest />
+      <div className="min-w-0">
+        <div className="font-serif text-[24px] font-semibold leading-none tracking-[-0.04em] text-[#132b5b]">
           AI Tutor
-        </div>
-        <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] text-[#9aa3b2]">
-          workspace
         </div>
       </div>
     </div>
@@ -59,29 +78,22 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "hidden h-full shrink-0 flex-col border-r border-[#e8e4dc] bg-[#fbfaf7]/95 py-7 shadow-[18px_0_60px_rgba(15,23,42,0.035)] backdrop-blur-xl lg:flex",
-        collapsed ? "w-[84px] px-3" : "w-[252px] px-5",
+        "hidden h-full shrink-0 flex-col border-r border-[#ebe6dc] bg-[#fcfbf7] py-8 shadow-[18px_0_60px_rgba(15,23,42,0.025)] lg:flex",
+        collapsed ? "w-[92px] px-4" : "w-[288px] px-5",
       )}
     >
       <button
         type="button"
         onClick={() => navigate("/")}
         className={cn("rounded-2xl text-left", collapsed && "mx-auto")}
-        title={collapsed ? "AI Tutor workspace" : undefined}
+        title={collapsed ? "AI Tutor" : undefined}
       >
-        {collapsed ? (
-          <div className="relative grid h-9 w-9 place-items-center rounded-[18px] border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <GraduationCap className="h-4.5 w-4.5" strokeWidth={1.9} />
-            <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#2563eb] ring-[3px] ring-white" />
-          </div>
-        ) : (
-          <BrandMark />
-        )}
+        {collapsed ? <TutorCrest /> : <BrandMark />}
       </button>
 
-      <div className="my-7 h-px bg-gradient-to-r from-transparent via-[#ded8cb] to-transparent" />
+      <div className="my-7 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
 
-      <nav className="space-y-2">
+      <nav className="space-y-2.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -93,31 +105,20 @@ export default function AppSidebar() {
               onClick={() => navigate(item.path)}
               title={collapsed ? item.label : undefined}
               className={cn(
-                "group relative flex h-12 w-full items-center gap-3 rounded-2xl text-left text-[14px] font-semibold transition-all duration-200",
+                "group flex h-14 w-full items-center gap-3 rounded-[18px] text-left text-[15px] font-medium transition-all duration-200",
                 active
-                  ? "bg-white text-[#175cdf] shadow-[0_14px_38px_rgba(37,99,235,0.10),inset_0_0_0_1px_rgba(37,99,235,0.10)]"
-                  : "text-[#667085] hover:bg-white/70 hover:text-[#111827] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
-                collapsed ? "justify-center px-0" : "px-3.5",
+                  ? "bg-[#eef4ff] text-[#2563eb] shadow-[inset_0_0_0_1px_rgba(37,99,235,0.06)]"
+                  : "text-[#5f6f8f] hover:bg-white hover:text-[#132b5b] hover:shadow-[0_12px_28px_rgba(15,23,42,0.04)]",
+                collapsed ? "justify-center px-0" : "px-4",
               )}
             >
-              {active && (
-                <span className={cn(
-                  "absolute top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#2563eb]",
-                  collapsed ? "-left-3" : "-left-6",
-                )} />
-              )}
-
-              <span
+              <Icon
                 className={cn(
-                  "grid h-8 w-8 place-items-center rounded-xl transition-colors duration-200",
-                  active
-                    ? "bg-[#2563eb] text-white shadow-[0_12px_24px_rgba(37,99,235,0.22)]"
-                    : "bg-transparent text-[#748198] group-hover:bg-[#f3f6fb]",
+                  "h-5 w-5 shrink-0 transition-colors",
+                  active ? "text-[#2563eb]" : "text-[#8090ae]",
                 )}
-              >
-                <Icon className="h-4.5 w-4.5" strokeWidth={1.9} />
-              </span>
-
+                strokeWidth={1.9}
+              />
               {!collapsed && <span>{item.label}</span>}
             </button>
           );
@@ -125,16 +126,16 @@ export default function AppSidebar() {
       </nav>
 
       <div className="mt-auto">
-        <div className="mb-5 h-px bg-gradient-to-r from-transparent via-[#ded8cb] to-transparent" />
+        <div className="mb-5 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
         <button
           type="button"
           onClick={() => setCollapsed((prev) => !prev)}
           className={cn(
-            "group flex h-11 w-full items-center rounded-2xl text-[13px] font-semibold text-[#667085] transition-all duration-200 hover:bg-white hover:text-[#111827] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
-            collapsed ? "justify-center px-0" : "gap-3 px-3",
+            "group flex h-12 w-full items-center rounded-[18px] text-[15px] font-medium text-[#6c7b98] transition-all duration-200 hover:bg-white hover:text-[#132b5b] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
+            collapsed ? "justify-center px-0" : "gap-3 px-4",
           )}
         >
-          <span className="grid h-7 w-7 place-items-center rounded-full border border-[#e6e1d8] bg-white text-[#667085] transition-colors group-hover:border-[#ccd5e8] group-hover:text-[#2563eb]">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-[#e7e2d9] bg-white text-[#6c7b98] transition-colors group-hover:border-[#d5dff1] group-hover:text-[#2563eb]">
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </span>
           {!collapsed && "Свернуть"}

@@ -1,4 +1,7 @@
-import { CheckCircle2, Trophy } from "lucide-react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, CheckCircle2, ClipboardCheck, Import, Trophy, UserRound } from "lucide-react";
+import DashboardShell, { DashboardPanel } from "@/components/dashboard/DashboardShell";
 import type { TestAnswerFeedback, TestQuestion, TestSection, UserTest } from "@/types/tutor";
 
 interface Props {
@@ -22,34 +25,66 @@ export default function TestDetailView({
   onAnswerChange,
   onCheckAnswer,
 }: Props) {
+  const navigate = useNavigate();
+  const answeredCount = useMemo(
+    () => Object.values(test.results || {}).filter((item) => item.correct).length,
+    [test.results],
+  );
+
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-6">
-      <button onClick={onBack} className="mb-4 flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground">
-        ← Назад к тестам
-      </button>
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-foreground">{test.title}</h1>
-        <p className="text-sm text-muted-foreground">
-          Тест • {test.questions.length} вопросов • {sections.length} тем
-        </p>
-        {test.completed && (
-          <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
-            <Trophy className="h-4 w-4" /> Пройдено! Результат: {test.score}%
+    <DashboardShell
+      title={test.title}
+      description={`Тест • ${test.questions.length} вопросов • ${sections.length} тем`}
+      overviewItems={[
+        { label: "Всего", value: test.questions.length, tone: "blue" },
+        { label: "Активно", value: test.questions.length - answeredCount, tone: "blue" },
+        { label: "Завершено", value: answeredCount, tone: "amber" },
+        { label: "Результат", value: `${test.score}%`, tone: "slate" },
+      ]}
+      quickActions={[
+        { label: "Добавить", icon: ClipboardCheck, onClick: onBack },
+        { label: "Импорт", icon: Import, onClick: () => navigate("/materials") },
+        { label: "Настройки", icon: UserRound, onClick: () => navigate("/profile") },
+      ]}
+      recentActivity={test.completed ? (
+        <div className="rounded-[18px] border border-[#d8f0e4] bg-[#f2fbf6] px-4 py-3">
+          <p className="text-[14px] font-medium text-[#249360]">Тест завершён</p>
+          <p className="mt-1 text-[12px] text-[#63a883]">Результат: {test.score}%</p>
+        </div>
+      ) : undefined}
+      toolbar={(
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex h-11 items-center gap-2 rounded-2xl border border-[#e7e1d8] bg-white px-4 text-[15px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
+        >
+          <ArrowLeft className="h-4.5 w-4.5" strokeWidth={1.8} />
+          Назад к тестам
+        </button>
+      )}
+    >
+      {test.completed && (
+        <DashboardPanel className="border-[#d8f0e4] bg-[#f6fcf8] p-5">
+          <div className="flex items-center gap-3 text-[15px] font-medium text-[#249360]">
+            <Trophy className="h-5 w-5" strokeWidth={1.8} />
+            Тест пройден. Итоговый результат: {test.score}%
           </div>
-        )}
-      </div>
+        </DashboardPanel>
+      )}
 
       <div className="space-y-4">
         {sections.map((section, sectionIndex) => (
-          <div key={section.topic} className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3">
+          <DashboardPanel key={section.topic} className="p-5">
+            <div className="mb-5 flex items-center justify-between gap-3 border-b border-[#eee8de] pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9aa7bf]">
                   Тема {sectionIndex + 1}
                 </p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">{section.topic}</h2>
+                <h2 className="mt-2 font-serif text-[24px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+                  {section.topic}
+                </h2>
               </div>
-              <span className="rounded-full border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
+              <span className="rounded-full border border-[#ece6da] bg-[#fdfbf6] px-3 py-1.5 text-[12px] font-medium text-[#5d7095]">
                 {section.questions.length} вопросов
               </span>
             </div>
@@ -64,23 +99,25 @@ export default function TestDetailView({
                 return (
                   <div
                     key={question.id}
-                    className={`rounded-2xl border p-4 transition-all ${
-                      isCorrect ? "border-green-500/30 bg-green-500/5" : "border-border bg-card"
+                    className={`rounded-[22px] border p-4 transition ${
+                      isCorrect
+                        ? "border-[#d8f0e4] bg-[#f2fbf6]"
+                        : "border-[#ece7dd] bg-[#fcfbf8]"
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
+                    <div className="flex items-start gap-4">
+                      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#eef4ff] text-[12px] font-semibold text-[#2563eb]">
                         {globalIndex >= 0 ? globalIndex + 1 : questionIndex + 1}
                       </span>
-                      <div className="flex-1 space-y-2">
-                        <p className="text-sm font-medium text-foreground">{question.question}</p>
+                      <div className="flex-1 space-y-3">
+                        <p className="text-[15px] font-medium leading-7 text-[#223761]">{question.question}</p>
                         {isCorrect ? (
-                          <div className="flex items-center gap-2 text-sm text-green-400">
-                            <CheckCircle2 className="h-4 w-4" />
+                          <div className="flex items-center gap-2 text-[14px] text-[#249360]">
+                            <CheckCircle2 className="h-4.5 w-4.5" strokeWidth={1.8} />
                             {existingResult ? `Ответ: ${existingResult.answer}` : "Верно!"}
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-3 sm:flex-row">
                             <input
                               value={answers[question.id] || ""}
                               onChange={(event) => onAnswerChange(question.id, event.target.value)}
@@ -90,23 +127,24 @@ export default function TestDetailView({
                                 }
                               }}
                               placeholder="Твой ответ..."
-                              className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                              className="flex-1 rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2.5 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
                               disabled={checking === question.id}
                             />
                             <button
+                              type="button"
                               onClick={() => onCheckAnswer(question)}
                               disabled={checking === question.id || !answers[question.id]?.trim()}
-                              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                              className="rounded-2xl bg-[#2563eb] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[#175cdf] disabled:cursor-not-allowed disabled:bg-[#98a2b3]"
                             >
                               {checking === question.id ? "..." : "Проверить"}
                             </button>
                           </div>
                         )}
                         {currentFeedback && !currentFeedback.correct && (
-                          <div className="whitespace-pre-line rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-orange-300">
+                          <div className="whitespace-pre-line rounded-[18px] border border-[#f1d8b8] bg-[#fff8ea] px-4 py-3 text-[13px] leading-6 text-[#8d6b31]">
                             {currentFeedback.message}
                             {currentFeedback.attempts >= 3 && (
-                              <p className="mt-1 text-[10px] opacity-70">💡 Подсказка: {question.hint}</p>
+                              <p className="mt-2 text-[12px] opacity-80">Подсказка: {question.hint}</p>
                             )}
                           </div>
                         )}
@@ -116,9 +154,9 @@ export default function TestDetailView({
                 );
               })}
             </div>
-          </div>
+          </DashboardPanel>
         ))}
       </div>
-    </div>
+    </DashboardShell>
   );
 }

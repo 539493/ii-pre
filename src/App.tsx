@@ -17,7 +17,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex h-screen overflow-hidden bg-background">
+  <div className="flex h-screen overflow-hidden bg-[#fbfaf7]">
     <AppSidebar />
     <div className="flex-1 overflow-hidden">{children}</div>
   </div>
