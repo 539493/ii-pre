@@ -71,15 +71,15 @@ const toneStyles: Record<SubjectTone, { soft: string; bar: string; glow: string 
 function BrandMark() {
   return (
     <div className="flex items-center gap-3">
-      <div className="relative grid h-10 w-10 place-items-center rounded-2xl border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-        <GraduationCap className="h-5 w-5" strokeWidth={1.9} />
-        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-[#2563eb] ring-4 ring-white" />
+      <div className="relative grid h-9 w-9 place-items-center rounded-[18px] border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <GraduationCap className="h-4.5 w-4.5" strokeWidth={1.9} />
+        <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#2563eb] ring-[3px] ring-white" />
       </div>
       <div>
-        <div className="font-serif text-[25px] font-semibold leading-none tracking-[-0.03em] text-[#101828]">
+        <div className="font-serif text-[22px] font-semibold leading-none tracking-[-0.03em] text-[#101828]">
           AI Tutor
         </div>
-        <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#9aa3b2]">
+        <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] text-[#9aa3b2]">
           workspace
         </div>
       </div>
@@ -89,11 +89,11 @@ function BrandMark() {
 
 function MobileTopbar() {
   return (
-    <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-[#e8e4dc] bg-[#fbfaf7]/90 px-5 backdrop-blur-xl lg:hidden">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#e8e4dc] bg-[#fbfaf7]/90 px-4 backdrop-blur-xl lg:hidden">
       <BrandMark />
       <button
         type="button"
-        className="rounded-2xl bg-[#101828] px-4 py-2 text-sm font-semibold text-white"
+        className="rounded-xl bg-[#101828] px-3 py-2 text-xs font-semibold text-white"
       >
         Меню
       </button>
@@ -113,24 +113,24 @@ function AddSubjectCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative overflow-hidden rounded-[28px] border border-[#e6e1d8] bg-white p-4 text-left shadow-[0_22px_70px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9d8ff] hover:shadow-[0_30px_90px_rgba(37,99,235,0.10)]",
-        compact ? "min-h-[242px] w-full" : "w-full sm:w-[410px]",
+        "group relative overflow-hidden rounded-[24px] border border-[#e6e1d8] bg-white p-3.5 text-left shadow-[0_18px_50px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9d8ff] hover:shadow-[0_24px_70px_rgba(37,99,235,0.08)]",
+        compact ? "min-h-[210px] w-full" : "w-full sm:w-[360px]",
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.10),transparent_48%)] opacity-80" />
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center rounded-[22px] border border-dashed border-[#b9c9ff] bg-[#fbfdff]/80 px-8 py-8",
-          compact ? "h-full min-h-[210px]" : "min-h-[150px]",
+          "relative flex flex-col items-center justify-center rounded-[20px] border border-dashed border-[#b9c9ff] bg-[#fbfdff]/80 px-6 py-6",
+          compact ? "h-full min-h-[182px]" : "min-h-[132px]",
         )}
       >
-        <span className="grid h-16 w-16 place-items-center rounded-full bg-[#2563eb] text-white shadow-[0_16px_36px_rgba(37,99,235,0.28)] transition-transform duration-300 group-hover:scale-105">
-          <Plus className="h-8 w-8" strokeWidth={1.9} />
+        <span className="grid h-14 w-14 place-items-center rounded-full bg-[#2563eb] text-white shadow-[0_14px_30px_rgba(37,99,235,0.24)] transition-transform duration-300 group-hover:scale-105">
+          <Plus className="h-7 w-7" strokeWidth={1.9} />
         </span>
-        <span className="mt-5 text-[16px] font-bold text-[#175cdf]">
+        <span className="mt-4 text-[15px] font-bold text-[#175cdf]">
           Добавить предмет
         </span>
-        <span className="mt-2 max-w-[240px] text-center text-[13px] leading-5 text-[#8a94a6]">
+        <span className="mt-2 max-w-[220px] text-center text-[12px] leading-5 text-[#8a94a6]">
           Создай пространство для уроков, тестов и материалов
         </span>
       </div>
@@ -150,20 +150,20 @@ function SubjectCard({
   const tone = toneStyles[subject.tone];
 
   return (
-    <article className="group relative overflow-hidden rounded-[30px] border border-[#e6e1d8] bg-white p-6 shadow-[0_22px_70px_rgba(15,23,42,0.055)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_32px_90px_rgba(15,23,42,0.09)]">
-      <div className={cn("absolute inset-x-0 top-0 h-28 bg-gradient-to-b to-transparent", tone.glow)} />
+    <article className="group relative overflow-hidden rounded-[26px] border border-[#e6e1d8] bg-white p-5 shadow-[0_18px_52px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_72px_rgba(15,23,42,0.08)]">
+      <div className={cn("absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent", tone.glow)} />
 
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-[30px] shadow-[0_16px_34px_rgba(15,23,42,0.10)]">
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-[26px] shadow-[0_12px_28px_rgba(15,23,42,0.09)]">
             {subject.icon}
           </div>
           <div>
-            <h3 className="text-[22px] font-bold tracking-[-0.03em] text-[#101828]">
+            <h3 className="text-[19px] font-bold tracking-[-0.03em] text-[#101828]">
               {subject.title}
             </h3>
-            <div className="mt-1 flex items-center gap-2 text-[13px] font-medium text-[#8a94a6]">
-              <Clock3 className="h-4 w-4" />
+            <div className="mt-1 flex items-center gap-1.5 text-[12px] font-medium text-[#8a94a6]">
+              <Clock3 className="h-3.5 w-3.5" />
               {subject.lastActivity}
             </div>
           </div>
@@ -172,23 +172,23 @@ function SubjectCard({
         <button
           type="button"
           onClick={onDelete}
-          className="grid h-9 w-9 place-items-center rounded-full text-[#98a2b3] transition hover:bg-[#f6f3ec] hover:text-[#101828]"
+          className="grid h-8 w-8 place-items-center rounded-full text-[#98a2b3] transition hover:bg-[#f6f3ec] hover:text-[#101828]"
           aria-label={`Удалить предмет ${subject.title}`}
         >
-          <MoreHorizontal className="h-5 w-5" />
+          <MoreHorizontal className="h-4.5 w-4.5" />
         </button>
       </div>
 
-      <p className="relative mt-6 min-h-[52px] text-[15px] leading-7 text-[#667085]">
+      <p className="relative mt-5 min-h-[44px] text-[13px] leading-6 text-[#667085]">
         {subject.description}
       </p>
 
-      <div className="relative mt-7">
-        <div className="mb-3 flex items-center justify-between text-[13px] font-semibold">
+      <div className="relative mt-5">
+        <div className="mb-2 flex items-center justify-between text-[12px] font-semibold">
           <span className="text-[#667085]">Прогресс</span>
           <span className="text-[#101828]">{subject.progress}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[#ece8df]">
+        <div className="h-1.5 overflow-hidden rounded-full bg-[#ece8df]">
           <div
             className={cn("h-full rounded-full transition-all", tone.bar)}
             style={{ width: `${subject.progress}%` }}
@@ -196,30 +196,30 @@ function SubjectCard({
         </div>
       </div>
 
-      <div className="relative mt-6 grid grid-cols-2 gap-3">
-        <div className={cn("rounded-2xl border px-4 py-3", tone.soft)}>
-          <div className="text-[20px] font-bold leading-none">{subject.tests}</div>
-          <div className="mt-1 text-[12px] font-semibold opacity-75">тестов</div>
+      <div className="relative mt-5 grid grid-cols-2 gap-2.5">
+        <div className={cn("rounded-2xl border px-3.5 py-3", tone.soft)}>
+          <div className="text-[18px] font-bold leading-none">{subject.tests}</div>
+          <div className="mt-1 text-[11px] font-semibold opacity-75">тестов</div>
         </div>
-        <div className="rounded-2xl border border-[#ece7dd] bg-[#fbfaf7] px-4 py-3 text-[#667085]">
-          <div className="text-[20px] font-bold leading-none text-[#101828]">
+        <div className="rounded-2xl border border-[#ece7dd] bg-[#fbfaf7] px-3.5 py-3 text-[#667085]">
+          <div className="text-[18px] font-bold leading-none text-[#101828]">
             {subject.materials}
           </div>
-          <div className="mt-1 text-[12px] font-semibold">материалов</div>
+          <div className="mt-1 text-[11px] font-semibold">материалов</div>
         </div>
       </div>
 
-      <div className="relative mt-6 flex items-center justify-between gap-4">
-        <span className="rounded-full border border-[#ece5d8] bg-[#fcfaf5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9aa3b2]">
+      <div className="relative mt-5 flex items-center justify-between gap-3">
+        <span className="rounded-full border border-[#ece5d8] bg-[#fcfaf5] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9aa3b2]">
           {subject.templateLabel}
         </span>
         <button
           type="button"
           onClick={onOpen}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#175cdf] transition group-hover:translate-x-0.5"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#175cdf] transition group-hover:translate-x-0.5"
         >
           Открыть предмет
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </article>
@@ -238,7 +238,7 @@ function SubjectsGrid({
   onAdd: () => void;
 }) {
   return (
-    <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {items.map((subject) => (
         <SubjectCard
           key={subject.id}
@@ -297,26 +297,26 @@ function StudyStillLife() {
 
 function EmptyState() {
   return (
-    <section className="relative overflow-hidden rounded-[34px] border border-[#e3ded3] bg-[#fffefa] shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+    <section className="relative overflow-hidden rounded-[30px] border border-[#e3ded3] bg-[#fffefa] shadow-[0_18px_56px_rgba(15,23,42,0.07)]">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,1)_0%,rgba(255,255,255,0.92)_43%,rgba(247,243,235,0.58)_100%)]" />
-      <div className="relative grid min-h-[420px] grid-cols-1 lg:grid-cols-[0.95fr_1.25fr]">
-        <div className="flex flex-col justify-center px-8 py-10 sm:px-14 lg:px-20">
-          <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl border border-[#eadfc9] bg-[#fff9ed] text-[#c49a45] shadow-[0_14px_32px_rgba(196,154,69,0.10)]">
-            <GraduationCap className="h-5 w-5" strokeWidth={1.8} />
+      <div className="relative grid min-h-[360px] grid-cols-1 lg:grid-cols-[0.95fr_1.25fr]">
+        <div className="flex flex-col justify-center px-7 py-8 sm:px-12 lg:px-16">
+          <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-2xl border border-[#eadfc9] bg-[#fff9ed] text-[#c49a45] shadow-[0_14px_32px_rgba(196,154,69,0.10)]">
+            <GraduationCap className="h-4.5 w-4.5" strokeWidth={1.8} />
           </div>
 
-          <h2 className="max-w-[430px] font-serif text-[38px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#101828] sm:text-[46px]">
+          <h2 className="max-w-[430px] font-serif text-[32px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#101828] sm:text-[38px]">
             Пока предметов нет
           </h2>
 
-          <p className="mt-6 max-w-[470px] text-[16px] leading-8 text-[#657083]">
+          <p className="mt-5 max-w-[450px] text-[14px] leading-7 text-[#657083]">
             Создай первый предмет. Иконка подберётся автоматически по названию, а затем этот же предмет появится в тестах и успеваемости.
           </p>
 
-          <div className="mt-9 flex items-center gap-3 text-[#c49a45]">
-            <span className="h-px w-12 bg-[#c49a45]" />
+          <div className="mt-7 flex items-center gap-3 text-[#c49a45]">
+            <span className="h-px w-10 bg-[#c49a45]" />
             <span className="h-2 w-2 rotate-45 bg-[#c49a45]" />
-            <span className="h-px w-12 bg-[#c49a45]" />
+            <span className="h-px w-10 bg-[#c49a45]" />
           </div>
         </div>
 
@@ -339,10 +339,10 @@ function PageHeader({
         <div className="inline-flex items-center gap-2 rounded-full border border-[#e6dfd0] bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9aa3b2] shadow-[0_10px_24px_rgba(15,23,42,0.03)] lg:hidden">
           Первая страница
         </div>
-        <h1 className="mt-4 font-serif text-[48px] font-semibold leading-none tracking-[-0.055em] text-[#101828] sm:text-[58px] lg:mt-0 lg:text-[66px]">
+        <h1 className="mt-3 font-serif text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#101828] sm:text-[44px] lg:mt-0 lg:text-[52px]">
           Мои предметы
         </h1>
-        <p className="mt-4 max-w-[760px] text-[17px] leading-7 text-[#667085]">
+        <p className="mt-3 max-w-[700px] text-[15px] leading-6 text-[#667085]">
           Добавь свои предметы и открой по каждому отдельное рабочее пространство
         </p>
       </div>
@@ -351,9 +351,9 @@ function PageHeader({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#2563eb] px-6 text-[15px] font-bold text-white shadow-[0_18px_40px_rgba(37,99,235,0.22)] transition hover:-translate-y-0.5 hover:bg-[#175cdf]"
+          className="inline-flex h-12 items-center justify-center gap-2.5 rounded-2xl bg-[#2563eb] px-5 text-[14px] font-bold text-white shadow-[0_16px_34px_rgba(37,99,235,0.20)] transition hover:-translate-y-0.5 hover:bg-[#175cdf]"
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="h-4.5 w-4.5" />
           Добавить предмет
         </button>
       )}
@@ -464,11 +464,11 @@ export default function SubjectsPage() {
       <MobileTopbar />
 
       <main>
-        <div className="mx-auto max-w-[1320px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-14 xl:px-16">
+        <div className="mx-auto max-w-[1240px] px-5 py-6 sm:px-7 sm:py-8 lg:px-10 lg:py-10 xl:px-12">
           <PageHeader hasSubjects={hasSubjects} onAdd={openAddModal} />
 
           {hasSubjects ? (
-            <div className="mt-10">
+            <div className="mt-8">
               <SubjectsGrid
                 items={cardItems}
                 onOpen={(subjectId) => navigate(`/subject/${subjectId}`)}
@@ -478,16 +478,16 @@ export default function SubjectsPage() {
             </div>
           ) : (
             <>
-              <div className="mt-10">
+              <div className="mt-8">
                 <AddSubjectCard onClick={openAddModal} />
               </div>
-              <div className="mt-10">
+              <div className="mt-8">
                 <EmptyState />
               </div>
             </>
           )}
 
-          <div className="mt-8 flex flex-wrap gap-3 lg:hidden">
+          <div className="mt-7 flex flex-wrap gap-2.5 lg:hidden">
             {navItems.map((item) => {
               const Icon = item.icon;
 
@@ -495,7 +495,7 @@ export default function SubjectsPage() {
                 <div
                   key={item.label}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold",
+                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold",
                     item.active
                       ? "border-[#d9e6ff] bg-[#eff5ff] text-[#175cdf]"
                       : "border-[#e6dfd0] bg-white text-[#667085]",
@@ -512,23 +512,23 @@ export default function SubjectsPage() {
 
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#101828]/30 px-4 backdrop-blur-md">
-          <div className="w-full max-w-xl rounded-[32px] border border-[#e8e0d2] bg-[#fcfaf5] p-6 shadow-[0_30px_80px_rgba(15,23,42,0.14)] sm:p-7">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#e8e0d2] bg-[#fcfaf5] p-5 shadow-[0_26px_72px_rgba(15,23,42,0.14)] sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9aa3b2]">
                   Новый предмет
                 </p>
-                <h2 className="mt-2 font-serif text-[34px] font-semibold tracking-[-0.04em] text-[#101828]">
+                <h2 className="mt-2 font-serif text-[28px] font-semibold tracking-[-0.04em] text-[#101828]">
                   Добавить курс
                 </h2>
-                <p className="mt-3 max-w-lg text-sm leading-7 text-[#667085]">
+                <p className="mt-2.5 max-w-lg text-[13px] leading-6 text-[#667085]">
                   Введи название, а мы предложим иконку, описание и визуальное направление для этого предмета.
                 </p>
               </div>
             </div>
 
             <div
-              className="mt-6 rounded-[28px] border px-5 py-4"
+              className="mt-5 rounded-[24px] border px-4 py-4"
               style={{
                 borderColor: `hsl(${suggestedAppearance.color} / 0.24)`,
                 backgroundColor: `hsl(${suggestedAppearance.color} / 0.08)`,
@@ -536,7 +536,7 @@ export default function SubjectsPage() {
             >
               <div className="flex items-start gap-4">
                 <div
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[28px]"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[24px]"
                   style={{ backgroundColor: `hsl(${suggestedAppearance.color} / 0.15)` }}
                 >
                   {newIcon || suggestedAppearance.icon}
@@ -546,20 +546,20 @@ export default function SubjectsPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9aa3b2]">
                     {suggestedAppearance.templateLabel}
                   </p>
-                  <p className="mt-2 font-serif text-[28px] font-semibold leading-none tracking-[-0.04em] text-[#101828]">
+                  <p className="mt-2 font-serif text-[24px] font-semibold leading-none tracking-[-0.04em] text-[#101828]">
                     {newName.trim() || "Предпросмотр предмета"}
                   </p>
-                  <p className="mt-3 text-sm leading-7 text-[#667085]">
+                  <p className="mt-2.5 text-[13px] leading-6 text-[#667085]">
                     {newDesc.trim() || suggestedAppearance.description}
                   </p>
-                  <p className="mt-3 text-sm font-medium text-[#175cdf]">
+                  <p className="mt-2.5 text-[13px] font-medium text-[#175cdf]">
                     Пример запроса: {suggestedAppearance.examplePrompt}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-3.5">
               <div className="flex gap-3">
                 <input
                   value={newIcon}
@@ -568,17 +568,17 @@ export default function SubjectsPage() {
                     setIconEditedManually(true);
                   }}
                   placeholder="📚"
-                  className="w-20 rounded-2xl border border-[#e6dfd0] bg-white px-3 py-3 text-center text-2xl text-[#101828] outline-none transition focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
+                  className="w-16 rounded-2xl border border-[#e6dfd0] bg-white px-3 py-2.5 text-center text-xl text-[#101828] outline-none transition focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
                 />
                 <input
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Название предмета"
-                  className="flex-1 rounded-2xl border border-[#e6dfd0] bg-white px-4 py-3 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
+                  className="flex-1 rounded-2xl border border-[#e6dfd0] bg-white px-4 py-2.5 text-[13px] text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
                 />
               </div>
 
-              <p className="text-xs leading-6 text-[#98a2b3]">
+              <p className="text-[11px] leading-5 text-[#98a2b3]">
                 Подсказка: для «Английского языка» автоматически подставится флаг, а для математики —
                 тематическая иконка и подходящий шаблон.
               </p>
@@ -590,15 +590,15 @@ export default function SubjectsPage() {
                   setDescriptionEditedManually(true);
                 }}
                 placeholder="Описание предмета"
-                className="w-full rounded-2xl border border-[#e6dfd0] bg-white px-4 py-3 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
+                className="w-full rounded-2xl border border-[#e6dfd0] bg-white px-4 py-2.5 text-[13px] text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#175cdf]/40 focus:ring-4 focus:ring-[#175cdf]/10"
               />
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 rounded-2xl border border-[#e6dfd0] bg-white px-4 py-3 text-sm font-medium text-[#667085] transition hover:bg-[#f8f5ee] hover:text-[#111827]"
+                className="flex-1 rounded-2xl border border-[#e6dfd0] bg-white px-4 py-2.5 text-[13px] font-medium text-[#667085] transition hover:bg-[#f8f5ee] hover:text-[#111827]"
               >
                 Отмена
               </button>
@@ -607,7 +607,7 @@ export default function SubjectsPage() {
                 onClick={handleAdd}
                 disabled={!newName.trim()}
                 className={cn(
-                  "flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(23,92,223,0.22)] transition",
+                  "flex-1 rounded-2xl px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_18px_35px_rgba(23,92,223,0.22)] transition",
                   newName.trim() ? "bg-[#175cdf] hover:bg-[#144fc1]" : "bg-[#98a2b3] shadow-none",
                 )}
               >
