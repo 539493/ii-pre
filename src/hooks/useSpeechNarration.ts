@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+const emojiPattern = /\p{Extended_Pictographic}/u;
+
 export function useSpeechNarration() {
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -44,11 +46,9 @@ export function useSpeechNarration() {
         onStepStart?.(index);
 
         // Strip emojis
-        const cleanText = steps[index]
-          .replace(
-            /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{231A}-\u{23F3}\u{23E9}-\u{23EF}\u{25AA}-\u{25FE}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu,
-            ""
-          )
+        const cleanText = Array.from(steps[index])
+          .filter((char) => !emojiPattern.test(char) && char !== "\u200D" && char !== "\uFE0F" && char !== "\u20E3")
+          .join("")
           .replace(/\s{2,}/g, " ")
           .trim();
 

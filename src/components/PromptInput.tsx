@@ -68,7 +68,7 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
         />
         <button
           onClick={onSubmit}
-          disabled={loading && !attachedImage}
+          disabled={loading}
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
         >
           {loading ? (

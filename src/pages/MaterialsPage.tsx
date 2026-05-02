@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { KnowledgeItem } from "@/types/tutor";
 import KnowledgePanel from "@/components/KnowledgePanel";
+import { fetchKnowledgeItems } from "@/services/tutorData";
 
 export default function MaterialsPage() {
   const [items, setItems] = useState<KnowledgeItem[]>([]);
 
   const loadKnowledge = useCallback(async () => {
-    const { data } = await supabase
-      .from("knowledge_items")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setItems(data as any);
+    try {
+      setItems(await fetchKnowledgeItems());
+    } catch {
+      setItems([]);
+    }
   }, []);
 
   useEffect(() => {

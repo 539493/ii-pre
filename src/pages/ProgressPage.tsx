@@ -1,18 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { ProgressRecord } from "@/types/tutor";
 import { getAllSubjects, getSuggestedSubjectName, suggestSubjectAppearance } from "@/lib/subjects";
+import { buildSubjectStats, buildTopicSummaries, getGradeLabel, getStudyTimeLabel } from "@/lib/progress-utils";
+import { fetchProgressRecords } from "@/services/tutorData";
 import { BarChart3, TrendingUp, Award, AlertCircle } from "lucide-react";
-
-interface TopicSummary {
-  topic: string;
-  subjectId: string;
-  totalQuestions: number;
-  correctAnswers: number;
-  score: number;
-  lastStudied: string;
-  hasSkipped: boolean;
-}
 
 export default function ProgressPage() {
   const [records, setRecords] = useState<ProgressRecord[]>([]);
@@ -21,68 +12,24 @@ export default function ProgressPage() {
   const subjectMap = useMemo(() => new Map(subjects.map((subject) => [subject.id, subject])), [subjects]);
 
   useEffect(() => {
-    loadProgress();
+    void loadProgress();
   }, []);
 
   async function loadProgress() {
-    const { data } = await supabase
-      .from("progress_records")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setRecords(data as any);
+    try {
+      setRecords(await fetchProgressRecords());
+    } catch {
+      setRecords([]);
+    }
   }
 
-  // Group by topic (not individual answers)
-  const topicSummaries = useMemo(() => {
-    const map = new Map<string, TopicSummary>();
-
-    for (const r of records) {
-      const key = `${r.subject_id}::${r.topic}`;
-      const existing = map.get(key);
-      if (existing) {
-        existing.totalQuestions += r.total_questions;
-        existing.correctAnswers += r.correct_answers;
-        existing.score = existing.totalQuestions > 0
-          ? Math.round((existing.correctAnswers / existing.totalQuestions) * 100)
-          : 0;
-        if (r.created_at > existing.lastStudied) existing.lastStudied = r.created_at;
-        if (r.correct_answers === 0) existing.hasSkipped = true;
-      } else {
-        map.set(key, {
-          topic: r.topic,
-          subjectId: r.subject_id,
-          totalQuestions: r.total_questions,
-          correctAnswers: r.correct_answers,
-          score: r.total_questions > 0 ? Math.round((r.correct_answers / r.total_questions) * 100) : 0,
-          lastStudied: r.created_at,
-          hasSkipped: r.correct_answers === 0,
-        });
-      }
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.lastStudied.localeCompare(a.lastStudied));
-  }, [records]);
+  const topicSummaries = useMemo(() => buildTopicSummaries(records), [records]);
 
   const filtered = selectedSubject === "all"
     ? topicSummaries
     : topicSummaries.filter((t) => t.subjectId === selectedSubject);
 
-  const subjectStats = subjects.map((s) => {
-    const topics = topicSummaries.filter((t) => t.subjectId === s.id);
-    const totalQ = topics.reduce((a, t) => a + t.totalQuestions, 0);
-    const totalC = topics.reduce((a, t) => a + t.correctAnswers, 0);
-    const avgScore = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
-    const skippedTopics = topics.filter((t) => t.hasSkipped && t.score < 50).length;
-    return { ...s, topicCount: topics.length, avgScore, totalQ, totalC, skippedTopics };
-  });
-
-  const gradeLabel = (score: number) => {
-    if (score >= 90) return { text: "Отлично", color: "text-green-400" };
-    if (score >= 70) return { text: "Хорошо", color: "text-blue-400" };
-    if (score >= 50) return { text: "Удовл.", color: "text-yellow-400" };
-    if (score > 0) return { text: "Нужна работа", color: "text-orange-400" };
-    return { text: "Не пройдено", color: "text-red-400" };
-  };
+  const subjectStats = useMemo(() => buildSubjectStats(subjects, topicSummaries), [subjects, topicSummaries]);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto p-6">
@@ -156,11 +103,8 @@ export default function ProgressPage() {
               const fallbackName = getSuggestedSubjectName(t.subjectId);
               const fallbackAppearance = suggestSubjectAppearance(subj?.name || fallbackName);
               const color = subj?.color || fallbackAppearance.color;
-              const grade = gradeLabel(t.score);
-              const studiedDate = new Date(t.lastStudied);
-              const now = new Date();
-              const daysAgo = Math.floor((now.getTime() - studiedDate.getTime()) / (1000 * 60 * 60 * 24));
-              const timeLabel = daysAgo === 0 ? "Сегодня" : daysAgo === 1 ? "Вчера" : `${daysAgo} дн. назад`;
+              const grade = getGradeLabel(t.score);
+              const { date: studiedDate, timeLabel } = getStudyTimeLabel(t.lastStudied);
 
               return (
                 <div

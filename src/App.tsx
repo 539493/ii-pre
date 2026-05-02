@@ -1,16 +1,18 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppSidebar from "@/components/AppSidebar";
-import SubjectsPage from "@/pages/SubjectsPage";
-import SubjectWorkspace from "@/pages/SubjectWorkspace";
-import MaterialsPage from "@/pages/MaterialsPage";
-import ProgressPage from "@/pages/ProgressPage";
-import ProfilePage from "@/pages/ProfilePage";
-import TestsPage from "@/pages/TestsPage";
-import NotFound from "@/pages/NotFound";
+
+const SubjectsPage = lazy(() => import("@/pages/SubjectsPage"));
+const SubjectWorkspace = lazy(() => import("@/pages/SubjectWorkspace"));
+const MaterialsPage = lazy(() => import("@/pages/MaterialsPage"));
+const ProgressPage = lazy(() => import("@/pages/ProgressPage"));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const TestsPage = lazy(() => import("@/pages/TestsPage"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,20 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
+const PageFallback = () => (
+  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+    Загружаю страницу…
+  </div>
+);
+
+const withAppLayout = (page: React.ReactNode) => (
+  <AppLayout>
+    <Suspense fallback={<PageFallback />}>
+      {page}
+    </Suspense>
+  </AppLayout>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -28,13 +44,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppLayout><SubjectsPage /></AppLayout>} />
-          <Route path="/subject/:subjectId" element={<AppLayout><SubjectWorkspace /></AppLayout>} />
-          <Route path="/tests" element={<AppLayout><TestsPage /></AppLayout>} />
-          <Route path="/materials" element={<AppLayout><MaterialsPage /></AppLayout>} />
-          <Route path="/progress" element={<AppLayout><ProgressPage /></AppLayout>} />
-          <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/" element={withAppLayout(<SubjectsPage />)} />
+          <Route path="/subject/:subjectId" element={withAppLayout(<SubjectWorkspace />)} />
+          <Route path="/tests" element={withAppLayout(<TestsPage />)} />
+          <Route path="/materials" element={withAppLayout(<MaterialsPage />)} />
+          <Route path="/progress" element={withAppLayout(<ProgressPage />)} />
+          <Route path="/profile" element={withAppLayout(<ProfilePage />)} />
+          <Route
+            path="*"
+            element={(
+              <Suspense fallback={<PageFallback />}>
+                <NotFound />
+              </Suspense>
+            )}
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

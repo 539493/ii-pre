@@ -1,26 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User, Save, CheckCircle2 } from "lucide-react";
-
-type Profile = {
-  name: string;
-  age: string;
-  grade: string;
-  bio: string;
-};
-
-const PROFILE_KEY = "ai-tutor-profile";
-
-function loadProfile(): Profile {
-  try {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    return raw ? JSON.parse(raw) : { name: "", age: "", grade: "", bio: "" };
-  } catch {
-    return { name: "", age: "", grade: "", bio: "" };
-  }
-}
+import { parseProfile, PROFILE_KEY } from "@/lib/profile";
+import type { Profile } from "@/types/tutor";
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<Profile>(loadProfile);
+  const [profile, setProfile] = useState<Profile>(() => parseProfile(localStorage.getItem(PROFILE_KEY)));
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {

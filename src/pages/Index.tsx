@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { TutorResponse, KnowledgeItem, ChatMessage } from "@/types/tutor";
 import KnowledgePanel from "@/components/KnowledgePanel";
 import BoardRenderer from "@/components/BoardRenderer";
 import ChatPanel from "@/components/ChatPanel";
 import PromptInput from "@/components/PromptInput";
 import { useSpeechNarration } from "@/hooks/useSpeechNarration";
+import { buildConversationHistory, getVisibleBoardItems } from "@/lib/tutor-session";
+import { fetchKnowledgeItems, requestQuizCheck, requestTutorBoard } from "@/services/tutorData";
 import { GraduationCap, Volume2, VolumeX } from "lucide-react";
 import {
   ResizablePanelGroup,
@@ -28,15 +29,15 @@ export default function Index() {
   const { narrate, stop, isSpeaking, currentStepIndex } = useSpeechNarration();
 
   const loadKnowledge = useCallback(async () => {
-    const { data } = await supabase
-      .from("knowledge_items")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setKnowledgeItems(data as any);
+    try {
+      setKnowledgeItems(await fetchKnowledgeItems());
+    } catch {
+      setKnowledgeItems([]);
+    }
   }, []);
 
   useEffect(() => {
-    loadKnowledge();
+    void loadKnowledge();
   }, [loadKnowledge]);
 
   useEffect(() => {
@@ -49,24 +50,12 @@ export default function Index() {
     return knowledgeItems.map((item) => `# ${item.title}\n${item.content}`).join("\n\n");
   }, [knowledgeItems]);
 
-  // Build conversation history for memory
-  const conversationHistory = useMemo(() => {
-    return messages.map((m) => ({
-      role: m.role,
-      content: m.role === "user" ? m.content : (m.result ? `${m.result.title}: ${m.result.summary}` : m.content),
-    }));
-  }, [messages]);
+  const conversationHistory = useMemo(() => buildConversationHistory(messages), [messages]);
 
-  const visibleBoard = useMemo(() => {
-    if (!activeResult?.board?.length) return [];
-    if (revealedStepIndex === -1 && !isSpeaking) {
-      return activeResult.board;
-    }
-    return activeResult.board.filter((item) => {
-      const step = (item as any).stepIndex ?? 0;
-      return step <= revealedStepIndex;
-    });
-  }, [activeResult, revealedStepIndex, isSpeaking]);
+  const visibleBoard = useMemo(
+    () => getVisibleBoardItems(activeResult, revealedStepIndex, isSpeaking),
+    [activeResult, revealedStepIndex, isSpeaking],
+  );
 
   async function handleTeach() {
     if (!prompt.trim()) {
@@ -88,62 +77,59 @@ export default function Index() {
     setActiveResult(null);
     setRevealedStepIndex(-1);
 
-    const { data, error: err } = await supabase.functions.invoke("tutor-board", {
-      body: {
+    try {
+      const result = await requestTutorBoard({
         prompt: prompt.trim(),
         knowledge: mergedKnowledge,
         history: conversationHistory,
-      },
-    });
+      });
 
-    setLoading(false);
-    if (err) {
-      setError(err.message || "Ошибка вызова AI.");
-      return;
-    }
+      setActiveResult(result);
 
-    const result = data as TutorResponse;
-    setActiveResult(result);
+      const assistantMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: result.summary,
+        result,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+      setPrompt("");
 
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: result.summary,
-      result,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, assistantMsg]);
-    setPrompt("");
-
-    if (voiceEnabled && result.steps?.length) {
-      setRevealedStepIndex(-1);
-      setTimeout(() => {
-        narrate(result.steps, (stepIdx) => {
-          setRevealedStepIndex(stepIdx);
-        });
-      }, 300);
-    } else {
-      setRevealedStepIndex(999);
+      if (voiceEnabled && result.steps?.length) {
+        setRevealedStepIndex(-1);
+        setTimeout(() => {
+          narrate(result.steps, (stepIdx) => {
+            setRevealedStepIndex(stepIdx);
+          });
+        }, 300);
+      } else {
+        setRevealedStepIndex(999);
+      }
+    } catch (teachError) {
+      setError(teachError instanceof Error ? teachError.message : "Ошибка вызова AI.");
+    } finally {
+      setLoading(false);
     }
   }
 
   const handleQuizAnswer = useCallback(async (question: string, answer: string) => {
     setLoadingQuestion(question);
     try {
-      const { data, error: err } = await supabase.functions.invoke("quiz-check", {
-        body: {
-          question,
-          answer,
-          context: activeResult?.title || "",
-        },
+      const data = await requestQuizCheck({
+        question,
+        answer,
+        context: activeResult?.title || "",
       });
-      if (err) {
-        setQuizFeedback((prev) => ({ ...prev, [question]: { correct: false, message: "Ошибка проверки, попробуй ещё раз 🔄" } }));
-      } else {
-        setQuizFeedback((prev) => ({ ...prev, [question]: data }));
-      }
-    } catch {
-      setQuizFeedback((prev) => ({ ...prev, [question]: { correct: false, message: "Попробуй ещё раз! 💪" } }));
+      setQuizFeedback((prev) => ({ ...prev, [question]: data }));
+    } catch (quizError) {
+      setQuizFeedback((prev) => ({
+        ...prev,
+        [question]: {
+          correct: false,
+          message: quizError instanceof Error ? quizError.message : "Попробуй ещё раз! 💪",
+        },
+      }));
     }
     setLoadingQuestion(null);
   }, [activeResult]);

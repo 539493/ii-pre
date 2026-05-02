@@ -12,6 +12,19 @@ type SubjectSuggestion = Pick<Subject, "icon" | "color" | "description"> & {
   examplePrompt: string;
 };
 
+function isSubject(value: unknown): value is Subject {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.name === "string" &&
+    typeof candidate.icon === "string" &&
+    typeof candidate.color === "string" &&
+    typeof candidate.description === "string"
+  );
+}
+
 function normalizeSubjectName(name: string) {
   return name.trim().toLowerCase();
 }
@@ -325,7 +338,8 @@ export function isFormulaSubject(subject: Subject | string) {
 export function getCustomSubjects(): Subject[] {
   try {
     const raw = localStorage.getItem(CUSTOM_SUBJECTS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(isSubject) : [];
   } catch {
     return [];
   }

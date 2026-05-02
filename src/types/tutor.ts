@@ -52,6 +52,11 @@ export type ChatMessage = {
   imageUrl?: string;
 };
 
+export type ChatHistoryEntry = {
+  role: ChatMessage["role"];
+  content: string;
+};
+
 export type KnowledgeItem = {
   id: string;
   title: string;
@@ -75,4 +80,70 @@ export type ProgressRecord = {
   total_questions: number;
   correct_answers: number;
   created_at: string;
+};
+
+export type QuizFeedbackItem = {
+  correct: boolean;
+  message: string;
+  errorCount?: number;
+  skipped?: boolean;
+  postponed?: boolean;
+};
+
+export type QuizCheckResponse = {
+  correct: boolean;
+  message: string;
+};
+
+export type TestAnswerFeedback = QuizCheckResponse & {
+  attempts: number;
+};
+
+export type TestQuestion = {
+  id: string;
+  question: string;
+  type: string;
+  correct_answer: string;
+  hint: string;
+  topic?: string;
+  section_index?: number;
+  question_index?: number;
+};
+
+export type TestResultItem = {
+  answer: string;
+  correct: boolean;
+  attempts: number;
+};
+
+export type TestSection = {
+  topic: string;
+  questions: TestQuestion[];
+};
+
+export type UserTest = {
+  id: string;
+  device_id: string;
+  subject_id: string;
+  title: string;
+  lesson_number: number;
+  questions: TestQuestion[];
+  results: Record<string, TestResultItem> | null;
+  completed: boolean;
+  score: number;
+  created_at: string;
+};
+
+export type GeneratedTestResponse = {
+  test_title: string;
+  sections: TestSection[];
+  questions: TestQuestion[];
+  question_count: number;
+};
+
+export type Profile = {
+  name: string;
+  age: string;
+  grade: string;
+  bio: string;
 };

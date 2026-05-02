@@ -1,14 +1,50 @@
-import { BookOpen, GraduationCap, BarChart3, User, ChevronLeft, ChevronRight, ClipboardList } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  GraduationCap,
+  Library,
+  User,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { id: "subjects", label: "Мои предметы", icon: GraduationCap, path: "/" },
-  { id: "tests", label: "Мои тесты", icon: ClipboardList, path: "/tests" },
-  { id: "materials", label: "Материалы", icon: BookOpen, path: "/materials" },
-  { id: "progress", label: "Успеваемость", icon: BarChart3, path: "/progress" },
-  { id: "profile", label: "Профиль", icon: User, path: "/profile" },
+type NavItem = {
+  label: string;
+  icon: LucideIcon;
+  path: string;
+};
+
+const navItems: NavItem[] = [
+  { label: "Мои предметы", icon: BookOpen, path: "/" },
+  { label: "Мои тесты", icon: ClipboardCheck, path: "/tests" },
+  { label: "Материалы", icon: Library, path: "/materials" },
+  { label: "Успеваемость", icon: BarChart3, path: "/progress" },
+  { label: "Профиль", icon: User, path: "/profile" },
 ];
+
+function BrandMark() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative grid h-10 w-10 place-items-center rounded-2xl border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <GraduationCap className="h-5 w-5" strokeWidth={1.9} />
+        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-[#2563eb] ring-4 ring-white" />
+      </div>
+      <div>
+        <div className="font-serif text-[25px] font-semibold leading-none tracking-[-0.03em] text-[#101828]">
+          AI Tutor
+        </div>
+        <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#9aa3b2]">
+          workspace
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -21,49 +57,89 @@ export default function AppSidebar() {
   };
 
   return (
-    <div
-      className={`flex h-full flex-col border-r border-border bg-sidebar transition-all duration-300 ${
-        collapsed ? "w-16" : "w-56"
-      }`}
+    <aside
+      className={cn(
+        "hidden h-full shrink-0 flex-col border-r border-[#e8e4dc] bg-[#fbfaf7]/95 py-7 shadow-[18px_0_60px_rgba(15,23,42,0.035)] backdrop-blur-xl lg:flex",
+        collapsed ? "w-[92px] px-3" : "w-[284px] px-6",
+      )}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-4">
-        <GraduationCap className="h-7 w-7 shrink-0 text-primary" />
-        {!collapsed && <span className="text-lg font-bold text-foreground">AI Tutor</span>}
-      </div>
+      <button
+        type="button"
+        onClick={() => navigate("/")}
+        className={cn("rounded-2xl text-left", collapsed && "mx-auto")}
+        title={collapsed ? "AI Tutor workspace" : undefined}
+      >
+        {collapsed ? (
+          <div className="relative grid h-10 w-10 place-items-center rounded-2xl border border-[#e7ddc7] bg-[#fbf8f0] text-[#c49a45] shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <GraduationCap className="h-5 w-5" strokeWidth={1.9} />
+            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-[#2563eb] ring-4 ring-white" />
+          </div>
+        ) : (
+          <BrandMark />
+        )}
+      </button>
 
-      {/* Nav items */}
-      <nav className="flex-1 space-y-1 p-2">
-        {NAV_ITEMS.map((item) => {
+      <div className="my-7 h-px bg-gradient-to-r from-transparent via-[#ded8cb] to-transparent" />
+
+      <nav className="space-y-2">
+        {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
+
           return (
             <button
-              key={item.id}
+              key={item.label}
+              type="button"
               onClick={() => navigate(item.path)}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+              title={collapsed ? item.label : undefined}
+              className={cn(
+                "group relative flex h-14 w-full items-center gap-4 rounded-2xl text-left text-[15px] font-semibold transition-all duration-200",
                 active
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
+                  ? "bg-white text-[#175cdf] shadow-[0_14px_38px_rgba(37,99,235,0.10),inset_0_0_0_1px_rgba(37,99,235,0.10)]"
+                  : "text-[#667085] hover:bg-white/70 hover:text-[#111827] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
+                collapsed ? "justify-center px-0" : "px-4",
+              )}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              {active && (
+                <span className={cn(
+                  "absolute top-1/2 h-9 w-1 -translate-y-1/2 rounded-r-full bg-[#2563eb]",
+                  collapsed ? "-left-3" : "-left-6",
+                )} />
+              )}
+
+              <span
+                className={cn(
+                  "grid h-9 w-9 place-items-center rounded-xl transition-colors duration-200",
+                  active
+                    ? "bg-[#2563eb] text-white shadow-[0_12px_24px_rgba(37,99,235,0.22)]"
+                    : "bg-transparent text-[#748198] group-hover:bg-[#f3f6fb]",
+                )}
+              >
+                <Icon className="h-[19px] w-[19px]" strokeWidth={1.9} />
+              </span>
+
               {!collapsed && <span>{item.label}</span>}
             </button>
           );
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="border-t border-border p-2">
+      <div className="mt-auto">
+        <div className="mb-5 h-px bg-gradient-to-r from-transparent via-[#ded8cb] to-transparent" />
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+          type="button"
+          onClick={() => setCollapsed((prev) => !prev)}
+          className={cn(
+            "group flex h-12 w-full items-center rounded-2xl text-[14px] font-semibold text-[#667085] transition-all duration-200 hover:bg-white hover:text-[#111827] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
+            collapsed ? "justify-center px-0" : "gap-3 px-3",
+          )}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          {!collapsed && <span>Свернуть</span>}
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-[#e6e1d8] bg-white text-[#667085] transition-colors group-hover:border-[#ccd5e8] group-hover:text-[#2563eb]">
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </span>
+          {!collapsed && "Свернуть"}
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

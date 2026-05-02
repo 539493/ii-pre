@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { KnowledgeItem } from "@/types/tutor";
+import { createKnowledgeItem, deleteKnowledgeItem } from "@/services/tutorData";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
 
 interface Props {
@@ -22,24 +22,28 @@ export default function KnowledgePanel({ items, onRefresh }: Props) {
     setError("");
     setSaving(true);
 
-    const { error: err } = await supabase.from("knowledge_items").insert({
-      title: title.trim(),
-      content: content.trim(),
-    } as any);
-
-    setSaving(false);
-    if (err) {
-      setError(err.message);
-      return;
+    try {
+      await createKnowledgeItem({
+        title: title.trim(),
+        content: content.trim(),
+      });
+      setTitle("");
+      setContent("");
+      onRefresh();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить материал.");
+    } finally {
+      setSaving(false);
     }
-    setTitle("");
-    setContent("");
-    onRefresh();
   }
 
   async function handleDelete(id: string) {
-    await supabase.from("knowledge_items").delete().eq("id", id);
-    onRefresh();
+    try {
+      await deleteKnowledgeItem(id);
+      onRefresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Не удалось удалить материал.");
+    }
   }
 
   return (
