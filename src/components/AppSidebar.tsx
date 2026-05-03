@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
 
 function TutorCrest() {
   return (
-    <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
+    <svg viewBox="0 0 48 48" className="h-9 w-9" fill="none" aria-hidden="true">
       <path
         d="M24 4 36 9v12.8c0 8.1-4.8 15.5-12 18.8-7.2-3.3-12-10.7-12-18.8V9L24 4Z"
         stroke="#18356B"
@@ -54,10 +54,10 @@ function TutorCrest() {
 
 function BrandMark() {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <TutorCrest />
       <div className="min-w-0">
-        <div className="font-serif text-[24px] font-semibold leading-none tracking-[-0.04em] text-[#132b5b]">
+        <div className="font-serif text-[21px] font-semibold leading-none tracking-[-0.04em] text-[#132b5b]">
           AI Tutor
         </div>
       </div>
@@ -78,8 +78,8 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "hidden h-full shrink-0 flex-col border-r border-[#ebe6dc] bg-[#fcfbf7] py-8 shadow-[18px_0_60px_rgba(15,23,42,0.025)] lg:flex",
-        collapsed ? "w-[92px] px-4" : "w-[288px] px-5",
+        "hidden h-full shrink-0 flex-col border-r border-[#ebe6dc] bg-[#fcfbf7] py-6 shadow-[18px_0_60px_rgba(15,23,42,0.025)] lg:flex",
+        collapsed ? "w-[84px] px-3.5" : "w-[248px] px-4",
       )}
     >
       <button
@@ -91,9 +91,9 @@ export default function AppSidebar() {
         {collapsed ? <TutorCrest /> : <BrandMark />}
       </button>
 
-      <div className="my-7 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
+      <div className="my-6 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
 
-      <nav className="space-y-2.5">
+      <nav className="space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -105,16 +105,16 @@ export default function AppSidebar() {
               onClick={() => navigate(item.path)}
               title={collapsed ? item.label : undefined}
               className={cn(
-                "group flex h-14 w-full items-center gap-3 rounded-[18px] text-left text-[15px] font-medium transition-all duration-200",
+                "group flex h-12 w-full items-center gap-2.5 rounded-[16px] text-left text-[14px] font-medium transition-all duration-200",
                 active
                   ? "bg-[#eef4ff] text-[#2563eb] shadow-[inset_0_0_0_1px_rgba(37,99,235,0.06)]"
                   : "text-[#5f6f8f] hover:bg-white hover:text-[#132b5b] hover:shadow-[0_12px_28px_rgba(15,23,42,0.04)]",
-                collapsed ? "justify-center px-0" : "px-4",
+                collapsed ? "justify-center px-0" : "px-3.5",
               )}
             >
               <Icon
                 className={cn(
-                  "h-5 w-5 shrink-0 transition-colors",
+                  "h-4.5 w-4.5 shrink-0 transition-colors",
                   active ? "text-[#2563eb]" : "text-[#8090ae]",
                 )}
                 strokeWidth={1.9}
@@ -126,17 +126,17 @@ export default function AppSidebar() {
       </nav>
 
       <div className="mt-auto">
-        <div className="mb-5 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
+        <div className="mb-4 h-px bg-gradient-to-r from-transparent via-[#e6dfd3] to-transparent" />
         <button
           type="button"
           onClick={() => setCollapsed((prev) => !prev)}
           className={cn(
-            "group flex h-12 w-full items-center rounded-[18px] text-[15px] font-medium text-[#6c7b98] transition-all duration-200 hover:bg-white hover:text-[#132b5b] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
-            collapsed ? "justify-center px-0" : "gap-3 px-4",
+            "group flex h-10 w-full items-center rounded-[16px] text-[14px] font-medium text-[#6c7b98] transition-all duration-200 hover:bg-white hover:text-[#132b5b] hover:shadow-[0_10px_30px_rgba(15,23,42,0.04)]",
+            collapsed ? "justify-center px-0" : "gap-2.5 px-3.5",
           )}
         >
-          <span className="grid h-8 w-8 place-items-center rounded-full border border-[#e7e2d9] bg-white text-[#6c7b98] transition-colors group-hover:border-[#d5dff1] group-hover:text-[#2563eb]">
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <span className="grid h-7 w-7 place-items-center rounded-full border border-[#e7e2d9] bg-white text-[#6c7b98] transition-colors group-hover:border-[#d5dff1] group-hover:text-[#2563eb]">
+            {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
           </span>
           {!collapsed && "Свернуть"}
         </button>

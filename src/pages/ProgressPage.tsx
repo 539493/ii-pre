@@ -47,14 +47,14 @@ function EmptyAnalyticsCard({
   illustration: React.ReactNode;
 }) {
   return (
-    <DashboardPanel className="p-5">
+    <DashboardPanel className="p-4">
       <DashboardSectionTitle
         title={title}
-        trailing={<Info className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />}
+        trailing={<Info className="h-4.5 w-4.5 text-[#8a97b2]" strokeWidth={1.8} />}
       />
-      <div className="flex min-h-[210px] flex-col items-center justify-center px-6 text-center">
+      <div className="flex min-h-[180px] flex-col items-center justify-center px-5 text-center">
         {illustration}
-        <p className="mt-5 text-[15px] font-medium text-[#6f7f9d]">{description}</p>
+        <p className="mt-4 text-[13px] font-medium leading-6 text-[#6f7f9d]">{description}</p>
       </div>
     </DashboardPanel>
   );
@@ -104,58 +104,58 @@ export default function ProgressPage() {
         { label: "Настройки", icon: Settings, onClick: () => navigate("/profile") },
       ]}
       recentActivity={topicSummaries.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {topicSummaries.slice(0, 3).map((item) => {
             const subject = subjects.find((entry) => entry.id === item.subjectId);
             const fallbackName = getSuggestedSubjectName(item.subjectId);
 
             return (
-              <div key={`${item.subjectId}-${item.topic}`} className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
-                <p className="line-clamp-1 text-[14px] font-medium text-[#223761]">
+              <div key={`${item.subjectId}-${item.topic}`} className="rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5">
+                <p className="line-clamp-1 text-[13px] font-medium text-[#223761]">
                   {subject?.icon || "📘"} {subject?.name || fallbackName}
                 </p>
-                <p className="mt-1 text-[12px] text-[#8a97b2]">{item.topic}</p>
+                <p className="mt-1 text-[11px] text-[#8a97b2]">{item.topic}</p>
               </div>
             );
           })}
         </div>
       ) : undefined}
     >
-      <DashboardPanel className="px-6 py-5">
-        <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 text-[#8a97b2]" strokeWidth={1.8} />
+      <DashboardPanel className="px-5 py-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="flex items-center gap-2.5">
+            <BarChart3 className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />
             <div>
-              <p className="text-[14px] text-[#7b89a5]">Всего предметов</p>
-              <p className="text-[18px] font-semibold text-[#2563eb]">{subjects.length}</p>
+              <p className="text-[13px] text-[#7b89a5]">Всего предметов</p>
+              <p className="text-[16px] font-semibold text-[#2563eb]">{subjects.length}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-6 w-6 text-[#8a97b2]" strokeWidth={1.8} />
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />
             <div>
-              <p className="text-[14px] text-[#7b89a5]">Активные предметы</p>
-              <p className="text-[18px] font-semibold text-[#2563eb]">{activeSubjects.length}</p>
+              <p className="text-[13px] text-[#7b89a5]">Активные предметы</p>
+              <p className="text-[16px] font-semibold text-[#2563eb]">{activeSubjects.length}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <ClipboardCheck className="h-6 w-6 text-[#8a97b2]" strokeWidth={1.8} />
+          <div className="flex items-center gap-2.5">
+            <ClipboardCheck className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />
             <div>
-              <p className="text-[14px] text-[#7b89a5]">Тестов пройдено</p>
-              <p className="text-[18px] font-semibold text-[#2563eb]">{records.length}</p>
+              <p className="text-[13px] text-[#7b89a5]">Тестов пройдено</p>
+              <p className="text-[16px] font-semibold text-[#2563eb]">{records.length}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Clock3 className="h-6 w-6 text-[#8a97b2]" strokeWidth={1.8} />
+          <div className="flex items-center gap-2.5">
+            <Clock3 className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />
             <div>
-              <p className="text-[14px] text-[#7b89a5]">Затрачено времени</p>
-              <p className="text-[18px] font-semibold text-[#2563eb]">0 ч</p>
+              <p className="text-[13px] text-[#7b89a5]">Затрачено времени</p>
+              <p className="text-[16px] font-semibold text-[#2563eb]">0 ч</p>
             </div>
           </div>
         </div>
       </DashboardPanel>
 
       {topicSummaries.length === 0 ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           <EmptyAnalyticsCard
             title="Прогресс по предметам"
             description="Нет данных для отображения. Начните изучать предметы, и прогресс появится здесь."
@@ -176,40 +176,40 @@ export default function ProgressPage() {
             description="Нет данных для отображения. Средний балл появится здесь после прохождения тестов."
             illustration={<ScoreIllustration />}
           />
-          <DashboardPanel className="p-5 lg:col-span-2">
+          <DashboardPanel className="p-4 lg:col-span-2">
             <DashboardSectionTitle
               title="Последние результаты"
               icon={ClipboardCheck}
-              trailing={<Info className="h-5 w-5 text-[#8a97b2]" strokeWidth={1.8} />}
+              trailing={<Info className="h-4.5 w-4.5 text-[#8a97b2]" strokeWidth={1.8} />}
             />
-            <div className="flex min-h-[112px] items-center justify-center gap-5 px-6 text-center md:justify-start">
+            <div className="flex min-h-[96px] items-center justify-center gap-4 px-5 text-center md:justify-start">
               <MiniDocumentIllustration />
-              <p className="max-w-[360px] text-[15px] leading-7 text-[#6f7f9d]">
+              <p className="max-w-[320px] text-[13px] leading-6 text-[#6f7f9d]">
                 Нет результатов для отображения. Пройдите тесты, чтобы увидеть свои последние результаты здесь.
               </p>
             </div>
           </DashboardPanel>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <DashboardPanel className="p-5">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+          <DashboardPanel className="p-4">
             <DashboardSectionTitle title="Прогресс по предметам" icon={BarChart3} />
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {subjectStats.filter((item) => item.topicCount > 0).map((item) => (
                 <div key={item.id}>
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#f5f8ff] text-xl">
+                      <span className="grid h-9 w-9 place-items-center rounded-[12px] bg-[#f5f8ff] text-lg">
                         {item.icon}
                       </span>
                       <div>
-                        <p className="text-[15px] font-medium text-[#223761]">{item.name}</p>
-                        <p className="text-[12px] text-[#8a97b2]">{item.topicCount} тем изучено</p>
+                        <p className="text-[14px] font-medium text-[#223761]">{item.name}</p>
+                        <p className="text-[11px] text-[#8a97b2]">{item.topicCount} тем изучено</p>
                       </div>
                     </div>
-                    <p className="text-[15px] font-semibold text-[#2563eb]">{item.avgScore}%</p>
+                    <p className="text-[14px] font-semibold text-[#2563eb]">{item.avgScore}%</p>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#eee9df]">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#eee9df]">
                     <div
                       className="h-full rounded-full bg-[#2563eb]"
                       style={{ width: `${item.avgScore}%` }}
@@ -220,53 +220,53 @@ export default function ProgressPage() {
             </div>
           </DashboardPanel>
 
-          <DashboardPanel className="p-5">
+          <DashboardPanel className="p-4">
             <DashboardSectionTitle title="Активность" icon={Clock3} />
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {topicSummaries.slice(0, 5).map((item) => {
                 const subject = subjects.find((entry) => entry.id === item.subjectId);
                 const fallbackName = getSuggestedSubjectName(item.subjectId);
                 const time = getStudyTimeLabel(item.lastStudied);
 
                 return (
-                  <div key={`${item.subjectId}-${item.topic}`} className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
+                  <div key={`${item.subjectId}-${item.topic}`} className="rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-[14px] font-medium text-[#223761]">
+                      <p className="text-[13px] font-medium text-[#223761]">
                         {subject?.icon || "📘"} {subject?.name || fallbackName}
                       </p>
-                      <span className="text-[12px] text-[#8a97b2]">{time.timeLabel}</span>
+                      <span className="text-[11px] text-[#8a97b2]">{time.timeLabel}</span>
                     </div>
-                    <p className="mt-1 text-[13px] text-[#6f7f9d]">{item.topic}</p>
+                    <p className="mt-1 text-[12px] text-[#6f7f9d]">{item.topic}</p>
                   </div>
                 );
               })}
             </div>
           </DashboardPanel>
 
-          <DashboardPanel className="p-5">
+          <DashboardPanel className="p-4">
             <DashboardSectionTitle title="Процент завершения" icon={CircleDashed} />
-            <div className="flex min-h-[210px] flex-col items-center justify-center text-center">
+            <div className="flex min-h-[180px] flex-col items-center justify-center text-center">
               <MetricEmptyIllustration icon={CircleDashed} badge={`${completionPercent}%`} />
-              <p className="mt-5 text-[15px] leading-7 text-[#6f7f9d]">
+              <p className="mt-4 text-[13px] leading-6 text-[#6f7f9d]">
                 Процент тем с уверенным прохождением и результатом выше среднего.
               </p>
             </div>
           </DashboardPanel>
 
-          <DashboardPanel className="p-5">
+          <DashboardPanel className="p-4">
             <DashboardSectionTitle title="Средний балл" icon={Star} />
-            <div className="flex min-h-[210px] flex-col items-center justify-center text-center">
+            <div className="flex min-h-[180px] flex-col items-center justify-center text-center">
               <MetricEmptyIllustration icon={Star} badge={`${averageScore}%`} />
-              <p className="mt-5 text-[15px] font-medium text-[#223761]">{getGradeLabel(averageScore).text}</p>
-              <p className="mt-2 text-[14px] leading-7 text-[#6f7f9d]">
+              <p className="mt-4 text-[14px] font-medium text-[#223761]">{getGradeLabel(averageScore).text}</p>
+              <p className="mt-2 text-[13px] leading-6 text-[#6f7f9d]">
                 Средний результат по всем сохранённым попыткам и изученным темам.
               </p>
             </div>
           </DashboardPanel>
 
-          <DashboardPanel className="p-5 lg:col-span-2">
+          <DashboardPanel className="p-4 lg:col-span-2">
             <DashboardSectionTitle title="Последние результаты" icon={ClipboardCheck} />
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {topicSummaries.slice(0, 6).map((item) => {
                 const subject = subjects.find((entry) => entry.id === item.subjectId);
                 const fallbackName = getSuggestedSubjectName(item.subjectId);
@@ -275,19 +275,19 @@ export default function ProgressPage() {
                 return (
                   <div
                     key={`${item.subjectId}-${item.topic}-result`}
-                    className="flex items-center gap-4 rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3"
+                    className="flex items-center gap-3 rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5"
                     style={{ borderLeft: `4px solid hsl(${subject?.color || fallbackAppearance.color})` }}
                   >
-                    <div className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#f5f8ff] text-xl">
+                    <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#f5f8ff] text-lg">
                       {subject?.icon || fallbackAppearance.icon}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-1 text-[15px] font-medium text-[#223761]">{item.topic}</p>
-                      <p className="mt-1 text-[12px] text-[#8a97b2]">
+                      <p className="line-clamp-1 text-[14px] font-medium text-[#223761]">{item.topic}</p>
+                      <p className="mt-1 text-[11px] text-[#8a97b2]">
                         {subject?.name || fallbackName} • {item.correctAnswers}/{item.totalQuestions} верно
                       </p>
                     </div>
-                    <span className="text-[15px] font-semibold text-[#2563eb]">{item.score}%</span>
+                    <span className="text-[14px] font-semibold text-[#2563eb]">{item.score}%</span>
                   </div>
                 );
               })}

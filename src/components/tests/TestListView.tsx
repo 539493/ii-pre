@@ -109,16 +109,16 @@ export default function TestListView({
         { label: "Настройки", icon: Settings, onClick: () => navigate("/profile") },
       ]}
       recentActivity={tests.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {tests.slice(0, 3).map((test) => (
             <button
               key={test.id}
               type="button"
               onClick={() => onOpenTest(test)}
-              className="w-full rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3 text-left transition hover:border-[#d7e2fb]"
+              className="w-full rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5 text-left transition hover:border-[#d7e2fb]"
             >
-              <p className="line-clamp-1 text-[14px] font-medium text-[#223761]">{test.title}</p>
-              <p className="mt-1 text-[12px] text-[#8a97b2]">{formatShortDate(test.created_at)}</p>
+              <p className="line-clamp-1 text-[13px] font-medium text-[#223761]">{test.title}</p>
+              <p className="mt-1 text-[11px] text-[#8a97b2]">{formatShortDate(test.created_at)}</p>
             </button>
           ))}
         </div>
@@ -126,16 +126,16 @@ export default function TestListView({
       toolbar={(
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <label className="relative max-w-[280px] flex-1">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-[#8a97b2]" strokeWidth={1.8} />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a97b2]" strokeWidth={1.8} />
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Поиск по тестам..."
-              className="h-11 w-full rounded-2xl border border-[#e7e1d8] bg-white pl-11 pr-4 text-[15px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
+              className="h-10 w-full rounded-[18px] border border-[#e7e1d8] bg-white pl-10 pr-4 text-[14px] text-[#223761] outline-none transition placeholder:text-[#8b99b4] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
             />
           </label>
 
-          <div className="inline-flex h-11 items-center rounded-2xl border border-[#e7e1d8] bg-white p-1">
+          <div className="inline-flex h-10 items-center rounded-[18px] border border-[#e7e1d8] bg-white p-1">
             {[
               { id: "all", label: "Все тесты" },
               { id: "drafts", label: "Черновики" },
@@ -145,7 +145,7 @@ export default function TestListView({
                 key={item.id}
                 type="button"
                 onClick={() => setStatusFilter(item.id as StatusFilter)}
-                className={`rounded-[14px] px-5 py-2 text-[15px] font-medium transition ${
+                className={`rounded-[12px] px-4 py-1.5 text-[13px] font-medium transition ${
                   statusFilter === item.id
                     ? "bg-[#eef4ff] text-[#2563eb]"
                     : "text-[#55688d] hover:text-[#2563eb]"
@@ -166,9 +166,9 @@ export default function TestListView({
 
               navigate("/");
             }}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#2563eb] px-5 text-[15px] font-medium text-white shadow-[0_18px_35px_rgba(37,99,235,0.22)] transition hover:bg-[#175cdf]"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[18px] bg-[#2563eb] px-4 text-[14px] font-medium text-white shadow-[0_18px_35px_rgba(37,99,235,0.22)] transition hover:bg-[#175cdf]"
           >
-            <Plus className="h-5 w-5" strokeWidth={1.8} />
+            <Plus className="h-4.5 w-4.5" strokeWidth={1.8} />
             Новый тест
           </button>
         </div>
@@ -179,7 +179,7 @@ export default function TestListView({
           <button
             type="button"
             onClick={() => onSelectSubject("all")}
-            className={`rounded-full border px-4 py-2 text-[13px] font-medium transition ${
+            className={`rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition ${
               selectedSubject === "all"
                 ? "border-[#dbe7ff] bg-[#eef4ff] text-[#2563eb]"
                 : "border-[#e7e1d8] bg-white text-[#60708f] hover:text-[#2563eb]"
@@ -192,7 +192,7 @@ export default function TestListView({
               key={subject.id}
               type="button"
               onClick={() => onSelectSubject(subject.id)}
-              className={`rounded-full border px-4 py-2 text-[13px] font-medium transition ${
+              className={`rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition ${
                 selectedSubject === subject.id
                   ? "border-[#dbe7ff] bg-[#eef4ff] text-[#2563eb]"
                   : "border-[#e7e1d8] bg-white text-[#60708f] hover:text-[#2563eb]"
@@ -221,67 +221,67 @@ export default function TestListView({
 
                   navigate("/");
                 }}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#2563eb] px-5 text-[15px] font-medium text-white shadow-[0_18px_35px_rgba(37,99,235,0.22)] transition hover:bg-[#175cdf]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[18px] bg-[#2563eb] px-4 text-[14px] font-medium text-white shadow-[0_18px_35px_rgba(37,99,235,0.22)] transition hover:bg-[#175cdf]"
               >
-                <Plus className="h-5 w-5" strokeWidth={1.8} />
+                <Plus className="h-4.5 w-4.5" strokeWidth={1.8} />
                 Создать тест
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/materials")}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[#e7e1d8] bg-white px-5 text-[15px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[18px] border border-[#e7e1d8] bg-white px-4 text-[14px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
               >
-                <Import className="h-5 w-5" strokeWidth={1.8} />
+                <Import className="h-4.5 w-4.5" strokeWidth={1.8} />
                 Импортировать
               </button>
             </>
           )}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {Array.from(groupedTests.entries()).map(([subjectId, subjectTests]) => {
             const { subject, fallbackName, fallbackAppearance } = getSubjectDisplay(subjectId, subjectMap);
             const icon = subject?.icon || fallbackAppearance.icon;
 
             return (
-              <div key={subjectId} className="space-y-3">
+              <div key={subjectId} className="space-y-2.5">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#f5f8ff] text-xl">
+                  <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#f5f8ff] text-lg">
                     {icon}
                   </span>
                   <div>
-                    <h2 className="font-serif text-[22px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+                    <h2 className="font-serif text-[19px] font-semibold tracking-[-0.03em] text-[#132b5b]">
                       {subject?.name || fallbackName}
                     </h2>
-                    <p className="text-[13px] text-[#8a97b2]">{subjectTests.length} тестов</p>
+                    <p className="text-[12px] text-[#8a97b2]">{subjectTests.length} тестов</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
                   {subjectTests.map((test) => (
-                    <DashboardPanel key={test.id} className="p-5">
+                    <DashboardPanel key={test.id} className="p-4">
                       <button
                         type="button"
                         onClick={() => onOpenTest(test)}
                         className="w-full text-left"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3">
                           {test.completed ? (
-                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#29a36a]" strokeWidth={1.9} />
+                            <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 shrink-0 text-[#29a36a]" strokeWidth={1.9} />
                           ) : (
-                            <Circle className="mt-0.5 h-5 w-5 shrink-0 text-[#8a97b2]" strokeWidth={1.9} />
+                            <Circle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-[#8a97b2]" strokeWidth={1.9} />
                           )}
                           <div className="min-w-0 flex-1">
-                            <h3 className="line-clamp-1 text-[17px] font-semibold tracking-[-0.03em] text-[#162d58]">
+                            <h3 className="line-clamp-1 text-[15px] font-semibold tracking-[-0.03em] text-[#162d58]">
                               {test.title}
                             </h3>
-                            <p className="mt-2 text-[13px] leading-6 text-[#7282a0]">
+                            <p className="mt-1.5 text-[12px] leading-5 text-[#7282a0]">
                               {test.questions.length} вопросов • {new Set(test.questions.map((question) => question.topic || "Общий блок")).size} тем
                               {test.completed && ` • ${test.score}%`}
                             </p>
 
-                            <div className="mt-5 flex items-center justify-between gap-3">
-                              <span className={`rounded-full border px-3 py-1.5 text-[12px] font-medium ${
+                            <div className="mt-4 flex items-center justify-between gap-3">
+                              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
                                 test.completed
                                   ? "border-[#d8f0e4] bg-[#f2fbf6] text-[#249360]"
                                   : "border-[#e7e1d8] bg-[#fdfbf6] text-[#657792]"
@@ -289,9 +289,9 @@ export default function TestListView({
                               >
                                 {test.completed ? "Пройден" : "Черновик"}
                               </span>
-                              <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#2563eb]">
+                              <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2563eb]">
                                 Открыть
-                                <ChevronRight className="h-4 w-4" strokeWidth={1.8} />
+                                <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} />
                               </span>
                             </div>
                           </div>
