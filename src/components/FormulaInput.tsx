@@ -21,13 +21,13 @@ const TEMPLATES = [
 
 export default function FormulaInput({ onInsert }: Props) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {TEMPLATES.map((t) => (
         <button
           key={t.label}
           onClick={() => onInsert(t.value)}
           title={t.desc}
-          className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs font-mono text-foreground transition hover:bg-primary/20 hover:border-primary/30"
+          className="rounded-[12px] border border-[#e7e1d8] bg-[#fcfbf8] px-2.5 py-1.5 text-[11px] font-mono text-[#28416d] transition hover:border-[#d5e3ff] hover:bg-[#eef4ff] hover:text-[#2563eb]"
         >
           {t.label}
         </button>

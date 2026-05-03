@@ -146,10 +146,10 @@ export function useSubjectWorkspace(subjectId?: string) {
     }).catch(() => undefined);
   }, [activeResult?.title, deviceId, subject]);
 
-  const handleTeach = useCallback(async () => {
+  const handleTeach = useCallback(async (overridePrompt?: string) => {
     if (!subject) return;
 
-    const textPrompt = prompt.trim();
+    const textPrompt = (overridePrompt ?? prompt).trim();
     if (!textPrompt && !attachedImage) {
       setError("Напиши, что нужно объяснить.");
       return;
@@ -343,6 +343,8 @@ export function useSubjectWorkspace(subjectId?: string) {
     loading,
     error,
     messages,
+    activeResult,
+    knowledgeItems,
     visibleBoard,
     voiceEnabled,
     toggleVoice,

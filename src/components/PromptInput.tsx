@@ -27,14 +27,14 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 shadow-lg">
+    <div className="rounded-[18px] border border-[#e7e1d8] bg-white p-3 shadow-[0_14px_28px_rgba(15,23,42,0.04)]">
       {/* Attached image preview */}
       {attachedImage && (
-        <div className="mb-2 flex items-start gap-2">
-          <img src={attachedImage} alt="Прикреплённое фото" className="h-20 rounded-lg object-contain border border-border" />
+        <div className="mb-3 flex items-start gap-2">
+          <img src={attachedImage} alt="Прикреплённое фото" className="h-20 rounded-[14px] border border-[#e7e1d8] object-contain" />
           <button
             onClick={() => onAttachImage?.(null)}
-            className="rounded-full p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition"
+            className="rounded-full p-1 text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#223761]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -48,9 +48,9 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
           onClick={() => fileRef.current?.click()}
           disabled={loading}
           title="Прикрепить фото"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-muted-foreground transition hover:bg-primary/20 hover:text-primary disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[#e7e1d8] bg-[#fcfbf8] text-[#6c7b98] transition hover:bg-[#eef4ff] hover:text-[#2563eb] disabled:opacity-50"
         >
-          <ImagePlus className="h-5 w-5" />
+          <ImagePlus className="h-4.5 w-4.5" />
         </button>
 
         <textarea
@@ -63,18 +63,18 @@ export default function PromptInput({ prompt, setPrompt, onSubmit, loading, atta
             }
           }}
           placeholder="Что ты хочешь изучить? Например: Объясни производную…"
-          className="min-h-[56px] flex-1 resize-none rounded-xl border-0 bg-transparent px-3 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="min-h-[52px] flex-1 resize-none rounded-[14px] border-0 bg-transparent px-2 py-2 text-[13px] leading-6 text-[#223761] outline-none placeholder:text-[#8a97b2]"
           rows={2}
         />
         <button
           onClick={onSubmit}
           disabled={loading}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#2563eb] text-white transition hover:bg-[#175cdf] disabled:opacity-50"
         >
           {loading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+            <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
-            <Send className="h-5 w-5" />
+            <Send className="h-4.5 w-4.5" />
           )}
         </button>
       </div>

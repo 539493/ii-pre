@@ -129,20 +129,20 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
   const densityScale = getDensityScale(blocks.length);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl" style={{ paddingBottom: `${(BOARD_H / BOARD_W) * 100}%` }}>
+    <div className="relative h-full min-h-[700px] w-full overflow-hidden rounded-[22px]">
       <div
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 30% 20%, hsl(220 30% 14%) 0%, hsl(220 30% 8%) 60%, hsl(220 30% 5%) 100%)
+            linear-gradient(180deg, #fffefb 0%, #fffdfa 100%)
           `,
         }}
       >
         {/* Grid dots */}
-        <svg className="absolute inset-0 h-full w-full opacity-[0.06]">
+        <svg className="absolute inset-0 h-full w-full opacity-[0.24]">
           <defs>
-            <pattern id="grid-dots" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="1" fill="currentColor" />
+            <pattern id="grid-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+              <circle cx="14" cy="14" r="0.9" fill="#dfd6c7" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid-dots)" />
@@ -152,7 +152,7 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
         <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${BOARD_W} ${BOARD_H}`} preserveAspectRatio="xMidYMid meet">
           <defs>
             <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="#94A3B8" />
+              <polygon points="0 0, 10 3.5, 0 7" fill="#6F7F9D" />
             </marker>
           </defs>
           {arrows.map((arrow, i) => (
@@ -162,7 +162,7 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
               y1={arrow.fromY}
               x2={arrow.toX}
               y2={arrow.toY}
-              stroke={arrow.color || "#94A3B8"}
+              stroke={arrow.color || "#6F7F9D"}
               strokeWidth="2"
               markerEnd="url(#arrowhead)"
               className="animate-chalk-write"
@@ -185,7 +185,7 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
                   width: `${(normalized.widthPx / BOARD_W) * 100}%`,
                   fontSize: `${normalized.fontSize}px`,
                   lineHeight: normalized.lineHeight,
-                  color: normalized.color || "#F8FAFC",
+                  color: normalized.color || (normalized.type === "formula" ? "#2557b7" : "#16315f"),
                   fontFamily: normalized.type === "formula" ? "'Courier New', monospace" : "inherit",
                   fontStyle: normalized.type === "formula" ? "italic" : "normal",
                   fontWeight: normalized.type === "text" ? 600 : 500,
@@ -205,14 +205,15 @@ export default function BoardRenderer({ items }: { items: BoardItem[] }) {
             return (
               <div
                 key={normalized.id}
-                className="absolute flex items-center justify-center rounded-xl border border-white/10 px-3 text-center animate-chalk-write"
+                className="absolute flex items-center justify-center rounded-[18px] border px-3 text-center animate-chalk-write shadow-[0_14px_24px_rgba(15,23,42,0.05)]"
                 style={{
                   left: pctX(normalized.x),
                   top: pctY(normalized.y),
                   width: `${(normalized.widthPx / BOARD_W) * 100}%`,
                   height: `${(normalized.heightPx / BOARD_H) * 100}%`,
-                  backgroundColor: normalized.color || "hsl(217 33% 14%)",
-                  color: normalized.textColor || "#E2E8F0",
+                  backgroundColor: normalized.color || "rgba(245, 248, 255, 0.92)",
+                  borderColor: normalized.color ? "transparent" : "#DCE5F4",
+                  color: normalized.textColor || "#28416D",
                   fontSize: `${normalized.fontSize}px`,
                   lineHeight: normalized.lineHeight,
                   animationDelay: `${i * 0.15}s`,

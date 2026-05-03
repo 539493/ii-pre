@@ -37,8 +37,8 @@ export default function QuizSection({ questions, onAnswer, quizFeedback, loading
   };
 
   return (
-    <div className="mt-2 space-y-1.5">
-      <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a97b2]">
         <HelpCircle className="h-3 w-3" />
         Проверь себя
       </div>
@@ -51,36 +51,36 @@ export default function QuizSection({ questions, onAnswer, quizFeedback, loading
         const isPostponed = feedback?.postponed;
 
         return (
-          <div key={i} className="space-y-1">
+          <div key={i} className="space-y-1.5">
             <button
               onClick={() => {
                 if (isCorrect) return;
                 setOpenQuestion(isOpen ? null : q);
                 setInputValue("");
               }}
-              className={`w-full text-left rounded-xl border px-3 py-2 text-xs transition-all ${
+              className={`w-full text-left rounded-[14px] border px-3 py-2.5 text-[12px] transition-all ${
                 isCorrect
-                  ? "border-green-500/30 bg-green-500/10 text-green-300"
+                  ? "border-[#d8f0e4] bg-[#f2fbf6] text-[#249360]"
                   : isSkipped
-                  ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+                  ? "border-[#f3e2b4] bg-[#fff8ea] text-[#9c7a2f]"
                   : isPostponed
-                  ? "border-orange-500/30 bg-orange-500/10 text-orange-300"
-                  : "border-border/50 bg-secondary/20 text-muted-foreground hover:bg-secondary/40 hover:text-foreground cursor-pointer"
+                  ? "border-[#f1d8b8] bg-[#fff5e8] text-[#b86b31]"
+                  : "border-[#ece7dd] bg-[#fcfbf8] text-[#5d7095] hover:border-[#d8e2fb] hover:text-[#223761] cursor-pointer"
               }`}
             >
               <div className="flex items-center gap-2">
-                {isCorrect && <CheckCircle2 className="h-3.5 w-3.5 text-green-400 shrink-0" />}
-                {isSkipped && <SkipForward className="h-3.5 w-3.5 text-yellow-400 shrink-0" />}
-                {isPostponed && <RotateCcw className="h-3.5 w-3.5 text-orange-400 shrink-0" />}
+                {isCorrect && <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#249360]" />}
+                {isSkipped && <SkipForward className="h-3.5 w-3.5 shrink-0 text-[#c69a37]" />}
+                {isPostponed && <RotateCcw className="h-3.5 w-3.5 shrink-0 text-[#d57d3d]" />}
                 <span>{q}</span>
               </div>
             </button>
 
             {feedback && !isSkipped && (
-              <div className={`whitespace-pre-line rounded-lg px-3 py-2 text-xs ${
+              <div className={`whitespace-pre-line rounded-[12px] px-3 py-2 text-[12px] ${
                 feedback.correct
-                  ? "bg-green-500/10 text-green-300 border border-green-500/20"
-                  : "bg-orange-500/10 text-orange-300 border border-orange-500/20"
+                  ? "border border-[#d8f0e4] bg-[#f2fbf6] text-[#249360]"
+                  : "border border-[#f1d8b8] bg-[#fff5e8] text-[#b86b31]"
               }`}>
                 {feedback.message}
                 {feedback.postponed && (
@@ -90,7 +90,7 @@ export default function QuizSection({ questions, onAnswer, quizFeedback, loading
             )}
 
             {isSkipped && (
-              <div className="rounded-lg px-3 py-2 text-xs bg-yellow-500/10 text-yellow-300 border border-yellow-500/20">
+              <div className="rounded-[12px] border border-[#f3e2b4] bg-[#fff8ea] px-3 py-2 text-[12px] text-[#9c7a2f]">
                 Пропущено — вернёмся позже 📌
               </div>
             )}
@@ -106,17 +106,17 @@ export default function QuizSection({ questions, onAnswer, quizFeedback, loading
                     if (e.key === "Enter") handleSubmit(q);
                   }}
                   placeholder="Твой ответ (— для пропуска)…"
-                  className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                  className="flex-1 rounded-[12px] border border-[#e7e1d8] bg-white px-3 py-2 text-[12px] text-[#223761] outline-none placeholder:text-[#8a97b2] focus:border-[#cedcff] focus:ring-4 focus:ring-[#2563eb]/8"
                   disabled={isLoading}
                   autoFocus
                 />
                 <button
                   onClick={() => handleSubmit(q)}
                   disabled={isLoading || !inputValue.trim()}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-50"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-[#2563eb] text-white disabled:opacity-50"
                 >
                   {isLoading ? (
-                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   ) : (
                     <ArrowRight className="h-3.5 w-3.5" />
                   )}
