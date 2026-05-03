@@ -6,6 +6,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   CircleHelp,
   ClipboardCheck,
   Eraser,
@@ -13,11 +14,13 @@ import {
   Hand,
   Highlighter,
   ImagePlus,
+  List,
   Maximize2,
   MessageSquare,
   MoreHorizontal,
   MousePointer2,
   PenTool,
+  RefreshCcw,
   Redo2,
   Search,
   Settings2,
@@ -180,7 +183,7 @@ function QuickActionCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-3 rounded-[18px] border px-4 py-3 text-left transition hover:translate-x-0.5",
+        "flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition hover:translate-x-0.5",
         toneClasses[tone],
       )}
     >
@@ -188,8 +191,13 @@ function QuickActionCard({
         <Icon className="h-4.5 w-4.5" strokeWidth={1.8} />
       </div>
       <span className="flex-1 text-[14px] font-medium">{title}</span>
+      <ChevronRight className="h-4 w-4 shrink-0 opacity-80" strokeWidth={1.8} />
     </button>
   );
+}
+
+function SkeletonLine({ className }: { className?: string }) {
+  return <div className={cn("h-2.5 rounded-full bg-[#eef1f6]", className)} />;
 }
 
 function formatSavedLabel(hasMessages: boolean, loading: boolean) {
@@ -331,7 +339,7 @@ export default function SubjectWorkspace() {
     <div className="flex h-full min-h-0 flex-col bg-[#fbfaf7] text-[#132b5b]">
       <div className="border-b border-[#ece6dc] bg-[#fcfbf7]/95 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-[1600px] items-center gap-3">
-          <label className="relative flex min-w-0 flex-1 items-center">
+          <label className="relative flex min-w-0 max-w-[830px] flex-1 items-center">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a97b2]" strokeWidth={1.8} />
             <input
               value={workspaceSearch}
@@ -380,14 +388,6 @@ export default function SubjectWorkspace() {
                   <span className="h-2 w-2 rounded-full bg-[#83c07b]" />
                   {formatSavedLabel(messages.length > 0, loading)}
                 </span>
-                <button
-                  type="button"
-                  onClick={toggleVoice}
-                  className="ml-1 inline-flex items-center gap-1.5 rounded-full border border-[#ece7dd] bg-white px-2.5 py-1 text-[12px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
-                >
-                  {voiceEnabled ? <Volume2 className="h-3.5 w-3.5" strokeWidth={1.8} /> : <VolumeX className="h-3.5 w-3.5" strokeWidth={1.8} />}
-                  {voiceEnabled ? "Голос" : "Без звука"}
-                </button>
               </div>
 
               <div className="flex items-center gap-2">
@@ -401,13 +401,13 @@ export default function SubjectWorkspace() {
             <div className="rounded-[26px] border border-[#ebe6dc] bg-white p-3 shadow-[0_18px_40px_rgba(15,23,42,0.03)]">
               <div className="mb-3 flex flex-wrap gap-2">
                 <ToolbarButton
-                  icon={Sparkles}
+                  icon={RefreshCcw}
                   label="Обновить"
                   onClick={handleRefreshBoard}
                   disabled={loading}
                 />
                 <ToolbarButton
-                  icon={MessageSquare}
+                  icon={List}
                   label="Шаги за шагом"
                   onClick={() => setActiveTab("steps")}
                   active={activeTab === "steps"}
@@ -433,10 +433,9 @@ export default function SubjectWorkspace() {
                   onClick={handleGraphRequest}
                 />
                 <ToolbarButton
-                  icon={Type}
-                  label="Текст"
-                  onClick={() => setActiveTool("text")}
-                  active={activeTool === "text"}
+                  icon={ClipboardCheck}
+                  label="Тест"
+                  onClick={handleCreateTest}
                 />
                 <ToolbarButton
                   icon={Highlighter}
@@ -535,46 +534,106 @@ export default function SubjectWorkspace() {
             {activeTab === "ai" && (
               <div className="flex min-h-0 flex-1 flex-col">
                 <div className="flex-1 space-y-3 overflow-y-auto p-4">
-                  <div className="rounded-[20px] border border-[#ece7dd] bg-[#fcfbf8] p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="grid h-11 w-11 place-items-center rounded-full bg-[#eef4ff] text-[#2563eb]">
-                        <Sparkles className="h-5 w-5" strokeWidth={1.8} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[14px] font-semibold text-[#132b5b]">
-                          {activeResult?.title || `${subject.name}: рабочая сессия`}
-                        </p>
-                        <p className="mt-2 text-[13px] leading-6 text-[#7282a0]">
-                          {activeResult?.summary || "Задай вопрос, и здесь появится краткое объяснение, выводы и следующие шаги."}
-                        </p>
+                  <div className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-11 w-11 rounded-full bg-[#eef1f6]" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <SkeletonLine className="w-24" />
+                        <SkeletonLine className="w-40" />
                       </div>
                     </div>
                   </div>
 
+                  <div className="min-h-[104px] rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                    {activeResult ? (
+                      <div>
+                        <p className="text-[14px] font-semibold text-[#132b5b]">
+                          {activeResult.title || `${subject.name}: рабочая сессия`}
+                        </p>
+                        <p className="mt-2 text-[13px] leading-6 text-[#7282a0]">
+                          {activeResult.summary}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 pt-1">
+                        <SkeletonLine className="w-4/5" />
+                        <SkeletonLine className="w-3/4" />
+                        <SkeletonLine className="w-2/3" />
+                      </div>
+                    )}
+                  </div>
+
                   <QuickActionCard
                     icon={Sparkles}
-                    title="Попросить короткое объяснение"
+                    title="Коротко объяснить тему"
                     tone="blue"
                     onClick={() => void handleTeach(`Коротко объясни тему ${activeResult?.title || subject.name}`)}
                   />
                   <QuickActionCard
-                    icon={ClipboardCheck}
-                    title="Проверить себя по текущей теме"
+                    icon={BookOpen}
+                    title="Показать пример или разбор"
                     tone="green"
-                    onClick={() => setActiveTab("steps")}
+                    onClick={handleExampleRequest}
                   />
                   <QuickActionCard
-                    icon={Volume2}
-                    title={voiceEnabled ? "Озвучка включена" : "Включить озвучку"}
+                    icon={ClipboardCheck}
+                    title="Собрать тест по теме"
                     tone="violet"
-                    onClick={toggleVoice}
+                    onClick={handleCreateTest}
                   />
 
+                  <div className="rounded-[18px] border border-[#ece7dd] bg-white p-3">
+                    <div className="space-y-0.5">
+                      {(recentMessages.length > 0 ? recentMessages.slice(0, 4) : Array.from({ length: 4 })).map((message, index) => {
+                        const tones = [
+                          "bg-[#ffd9d2]",
+                          "bg-[#d8e4ff]",
+                          "bg-[#eadcff]",
+                          "bg-[#d9f0d9]",
+                        ];
+
+                        const content = typeof message === "object" && "id" in message
+                          ? (message.role === "assistant" ? message.result?.summary || message.content : message.content)
+                          : "";
+
+                        return (
+                          <div
+                            key={typeof message === "object" && "id" in message ? message.id : `placeholder-${index}`}
+                            className="flex items-center gap-3 rounded-[14px] px-2 py-2.5 transition hover:bg-[#fcfbf8]"
+                          >
+                            <span className={cn("h-5 w-5 shrink-0 rounded-[6px]", tones[index % tones.length])} />
+                            <div className="min-w-0 flex-1">
+                              {content ? (
+                                <p className="line-clamp-1 text-[12px] text-[#7282a0]">{content}</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  <SkeletonLine className="w-4/5" />
+                                  <SkeletonLine className="w-2/3" />
+                                </div>
+                              )}
+                            </div>
+                            <MoreHorizontal className="h-4 w-4 shrink-0 text-[#8a97b2]" strokeWidth={1.8} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {activeResult?.checkUnderstanding?.length ? (
-                    <div className="rounded-[20px] border border-[#ece7dd] bg-white p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        <CheckCircle2 className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
-                        <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
+                    <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
+                          <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={toggleVoice}
+                          className="inline-flex h-8 items-center gap-1.5 rounded-[12px] border border-[#ece7dd] bg-[#fcfbf8] px-2.5 text-[11px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
+                        >
+                          {voiceEnabled ? <Volume2 className="h-3.5 w-3.5" strokeWidth={1.8} /> : <VolumeX className="h-3.5 w-3.5" strokeWidth={1.8} />}
+                          {voiceEnabled ? "Озвучка" : "Без звука"}
+                        </button>
                       </div>
                       <QuizSection
                         questions={activeResult.checkUnderstanding}
@@ -583,40 +642,17 @@ export default function SubjectWorkspace() {
                         loadingQuestion={loadingQuestion}
                       />
                     </div>
-                  ) : null}
-
-                  <div className="rounded-[20px] border border-[#ece7dd] bg-white p-4">
-                    <div className="mb-3 flex items-center gap-2">
-                      <MessageSquare className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
-                      <p className="text-[14px] font-semibold text-[#132b5b]">Последние сообщения</p>
-                    </div>
-
-                    {recentMessages.length === 0 ? (
-                      <p className="text-[13px] leading-6 text-[#7282a0]">
-                        Диалог пока пуст. Используй поле ввода ниже, чтобы начать объяснение темы.
-                      </p>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {recentMessages.map((message) => (
-                          <div key={message.id} className="rounded-[16px] border border-[#f0ebe2] bg-[#fcfbf8] px-3 py-2.5">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className={cn(
-                                "text-[11px] font-semibold uppercase tracking-[0.18em]",
-                                message.role === "assistant" ? "text-[#2563eb]" : "text-[#8a97b2]",
-                              )}>
-                                {message.role === "assistant" ? "AI" : "Вы"}
-                              </span>
-                            </div>
-                            <p className="mt-1 text-[13px] leading-5 text-[#42557a]">
-                              {message.role === "assistant"
-                                ? message.result?.summary || message.content
-                                : message.content}
-                            </p>
-                          </div>
-                        ))}
+                  ) : (
+                    <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <MessageSquare className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
+                        <p className="text-[14px] font-semibold text-[#132b5b]">AI-репетитор</p>
                       </div>
-                    )}
-                  </div>
+                      <p className="text-[12px] leading-6 text-[#7282a0]">
+                        Задай вопрос ниже, и доска заполнится шагами, формулами и пояснениями по теме.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-[#ece7dd] bg-[#fcfbf7] p-4">
