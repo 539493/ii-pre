@@ -8,6 +8,7 @@ import {
   Info,
   Search,
   SunMedium,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ type DashboardShellProps = {
   toolbar?: ReactNode;
   overviewItems: DashboardOverviewItem[];
   quickActions?: DashboardQuickAction[];
+  showQuickActions?: boolean;
   recentActivity?: ReactNode;
   children: ReactNode;
 };
@@ -162,55 +164,82 @@ export function DashboardSectionTitle({
 function DashboardOverviewRail({
   overviewItems,
   quickActions = [],
+  showQuickActions = false,
   recentActivity,
-}: Pick<DashboardShellProps, "overviewItems" | "quickActions" | "recentActivity">) {
+}: Pick<DashboardShellProps, "overviewItems" | "quickActions" | "showQuickActions" | "recentActivity">) {
+  const [isOverviewVisible, setIsOverviewVisible] = useState(true);
+
   return (
     <aside className="w-full shrink-0 space-y-3.5 xl:sticky xl:top-5 xl:w-[300px]">
-      <DashboardPanel className="p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
-            Обзор
-          </h3>
-          <Info className="h-4.5 w-4.5 text-[#8a97b2]" strokeWidth={1.8} />
-        </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          {overviewItems.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-3"
-            >
-              <p className="text-[12px] text-[#7b89a5]">{item.label}</p>
-              <p className={cn("mt-1.5 text-[16px] font-semibold", toneClasses[item.tone || "slate"])}>
-                {item.value}
-              </p>
-            </div>
-          ))}
-        </div>
-      </DashboardPanel>
-
-      <DashboardPanel className="p-4">
-        <h3 className="mb-3 font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
-          Быстрые действия
-        </h3>
-        <div className="space-y-2.5">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-
-            return (
+      {isOverviewVisible ? (
+        <DashboardPanel className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+              Обзор
+            </h3>
+            <div className="flex items-center gap-1.5">
+              <Info className="h-4.5 w-4.5 text-[#8a97b2]" strokeWidth={1.8} />
               <button
-                key={action.label}
                 type="button"
-                onClick={action.onClick}
-                className="flex w-full items-center gap-3 rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-2.5 text-left text-[14px] font-medium text-[#415276] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
+                onClick={() => setIsOverviewVisible(false)}
+                className="grid h-8 w-8 place-items-center rounded-full text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#132b5b]"
+                aria-label="Скрыть обзор"
               >
-                <Icon className="h-4.5 w-4.5 shrink-0 text-[#7f8eab]" strokeWidth={1.8} />
-                <span className="flex-1">{action.label}</span>
-                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a4bb]" strokeWidth={1.8} />
+                <X className="h-4 w-4" strokeWidth={1.9} />
               </button>
-            );
-          })}
-        </div>
-      </DashboardPanel>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {overviewItems.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-3"
+              >
+                <p className="text-[12px] text-[#7b89a5]">{item.label}</p>
+                <p className={cn("mt-1.5 text-[16px] font-semibold", toneClasses[item.tone || "slate"])}>
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </DashboardPanel>
+      ) : (
+        <DashboardPanel className="p-3">
+          <button
+            type="button"
+            onClick={() => setIsOverviewVisible(true)}
+            className="flex w-full items-center justify-center rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5 text-[13px] font-medium text-[#415276] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
+          >
+            Показать обзор
+          </button>
+        </DashboardPanel>
+      )}
+
+      {showQuickActions && quickActions.length > 0 && (
+        <DashboardPanel className="p-4">
+          <h3 className="mb-3 font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+            Быстрые действия
+          </h3>
+          <div className="space-y-2.5">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+
+              return (
+                <button
+                  key={action.label}
+                  type="button"
+                  onClick={action.onClick}
+                  className="flex w-full items-center gap-3 rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-2.5 text-left text-[14px] font-medium text-[#415276] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
+                >
+                  <Icon className="h-4.5 w-4.5 shrink-0 text-[#7f8eab]" strokeWidth={1.8} />
+                  <span className="flex-1">{action.label}</span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a4bb]" strokeWidth={1.8} />
+                </button>
+              );
+            })}
+          </div>
+        </DashboardPanel>
+      )}
 
       <DashboardPanel className="p-4">
         <h3 className="mb-3 font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
@@ -272,6 +301,7 @@ export default function DashboardShell({
   toolbar,
   overviewItems,
   quickActions,
+  showQuickActions,
   recentActivity,
   children,
 }: DashboardShellProps) {
@@ -302,6 +332,7 @@ export default function DashboardShell({
           <DashboardOverviewRail
             overviewItems={overviewItems}
             quickActions={quickActions}
+            showQuickActions={showQuickActions}
             recentActivity={recentActivity}
           />
         </div>
