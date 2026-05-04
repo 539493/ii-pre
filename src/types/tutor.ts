@@ -79,6 +79,8 @@ export type ProgressRecord = {
   score: number;
   total_questions: number;
   correct_answers: number;
+  device_id?: string | null;
+  studied_at?: string | null;
   created_at: string;
 };
 

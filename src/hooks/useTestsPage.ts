@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { groupQuestionsByTopic } from "@/lib/test-utils";
 import { getOrCreateDeviceId } from "@/lib/tutor-session";
 import {
-  fetchLatestUserTests,
+  fetchUserTests,
   persistUserTestResult,
   recordProgressRecord,
   requestQuizCheck,
@@ -20,7 +20,7 @@ export function useTestsPage() {
 
   const loadTests = useCallback(async () => {
     try {
-      setTests(await fetchLatestUserTests(deviceId));
+      setTests(await fetchUserTests(deviceId));
     } catch {
       setTests([]);
     }
@@ -55,8 +55,23 @@ export function useTestsPage() {
 
   const openTest = useCallback((test: UserTest) => {
     setSelectedTest(test);
-    setAnswers({});
-    setFeedback({});
+    setAnswers(Object.fromEntries(
+      Object.entries(test.results || {}).map(([questionId, result]) => [questionId, result.answer]),
+    ));
+    setFeedback(Object.fromEntries(
+      Object.entries(test.results || {})
+        .filter(([, result]) => !result.correct)
+        .map(([questionId, result]) => [
+          questionId,
+          {
+            correct: false,
+            attempts: result.attempts,
+            message: result.attempts >= 3
+              ? "Здесь уже было несколько неточных попыток. Попробуй ещё раз и опирайся на подсказку."
+              : "Здесь была неточная попытка. Попробуй переформулировать ответ.",
+          },
+        ]),
+    ));
   }, []);
 
   const closeTest = useCallback(() => {
@@ -87,6 +102,16 @@ export function useTestsPage() {
         errorCount: currentAttempts - 1,
       });
 
+      const nextResults: Record<string, TestResultItem> = {
+        ...(selectedTest.results || {}),
+        [question.id]: { answer, correct: response.correct, attempts: currentAttempts },
+      };
+      const allCorrect = selectedTest.questions.every((item) => nextResults[item.id]?.correct);
+      const correctCount = Object.values(nextResults).filter((result) => result.correct).length;
+      const score = Math.round((correctCount / selectedTest.questions.length) * 100);
+
+      await persistUserTestResult(selectedTest.id, nextResults, allCorrect, score);
+
       setFeedback((prev) => ({
         ...prev,
         [question.id]: {
@@ -96,17 +121,18 @@ export function useTestsPage() {
         },
       }));
 
-      if (!response.correct) return;
-
-      const nextResults: Record<string, TestResultItem> = {
-        ...(selectedTest.results || {}),
-        [question.id]: { answer, correct: true, attempts: currentAttempts },
-      };
-      const allCorrect = selectedTest.questions.every((item) => nextResults[item.id]?.correct);
-      const correctCount = Object.values(nextResults).filter((result) => result.correct).length;
-      const score = Math.round((correctCount / selectedTest.questions.length) * 100);
-
-      await persistUserTestResult(selectedTest.id, nextResults, allCorrect, score);
+      if (!response.correct) {
+        setSelectedTest((prev) => (
+          prev ? { ...prev, results: nextResults, completed: allCorrect, score } : null
+        ));
+        setTests((prev) => prev.map((test) => (
+          test.id === selectedTest.id
+            ? { ...test, results: nextResults, completed: allCorrect, score }
+            : test
+        )));
+        void loadTests();
+        return;
+      }
 
       if (allCorrect && !selectedTest.completed) {
         void recordProgressRecord({

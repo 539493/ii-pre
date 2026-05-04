@@ -21,29 +21,32 @@ export default function TestsPage() {
     checkAnswer,
   } = useTestsPage();
 
-  if (selectedTest) {
-    return (
-      <TestDetailView
-        test={selectedTest}
-        sections={selectedTestSections}
-        answers={answers}
-        feedback={feedback}
-        checking={checking}
-        onBack={closeTest}
-        onAnswerChange={updateAnswer}
-        onCheckAnswer={checkAnswer}
-      />
-    );
-  }
-
   return (
-    <TestListView
-      tests={tests}
-      groupedTests={groupedTests}
-      subjects={subjects}
-      selectedSubject={selectedSubject}
-      onSelectSubject={setSelectedSubject}
-      onOpenTest={openTest}
-    />
+    <div
+      key={selectedTest ? `test-${selectedTest.id}` : "tests-list"}
+      className="h-full animate-surface-enter"
+    >
+      {selectedTest ? (
+        <TestDetailView
+          test={selectedTest}
+          sections={selectedTestSections}
+          answers={answers}
+          feedback={feedback}
+          checking={checking}
+          onBack={closeTest}
+          onAnswerChange={updateAnswer}
+          onCheckAnswer={checkAnswer}
+        />
+      ) : (
+        <TestListView
+          tests={tests}
+          groupedTests={groupedTests}
+          subjects={subjects}
+          selectedSubject={selectedSubject}
+          onSelectSubject={setSelectedSubject}
+          onOpenTest={openTest}
+        />
+      )}
+    </div>
   );
 }

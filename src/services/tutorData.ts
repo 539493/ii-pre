@@ -68,11 +68,17 @@ export async function deleteKnowledgeItem(id: string) {
   if (error) throw new Error(getErrorMessage(error, "Не удалось удалить материал."));
 }
 
-export async function fetchProgressRecords(): Promise<ProgressRecord[]> {
-  const { data, error } = await supabase
+export async function fetchProgressRecords(deviceId?: string): Promise<ProgressRecord[]> {
+  let query = supabase
     .from("progress_records")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (deviceId) {
+    query = query.eq("device_id", deviceId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(getErrorMessage(error, "Не удалось загрузить прогресс."));
   return data ?? [];
@@ -83,15 +89,16 @@ export async function recordProgressRecord(record: TablesInsert<"progress_record
   if (error) throw new Error(getErrorMessage(error, "Не удалось сохранить прогресс."));
 }
 
-export async function fetchLatestUserTests(deviceId: string): Promise<UserTest[]> {
+export async function fetchUserTests(deviceId: string, latestBySubject = false): Promise<UserTest[]> {
   const { data, error } = await supabase
     .from("user_tests")
     .select("*")
     .eq("device_id", deviceId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   if (error) throw new Error(getErrorMessage(error, "Не удалось загрузить тесты."));
-  return selectLatestTestsBySubject((data ?? []).map(normalizeUserTest));
+  const normalized = (data ?? []).map(normalizeUserTest);
+  return latestBySubject ? selectLatestTestsBySubject(normalized) : normalized;
 }
 
 export async function persistUserTestResult(

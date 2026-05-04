@@ -1,4 +1,4 @@
-import { useState, type ElementType } from "react";
+import { useState, type ElementType, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   BarChart3,
@@ -6,6 +6,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   ClipboardCheck,
@@ -161,6 +162,26 @@ function SideTab({
   );
 }
 
+function WorkspaceTabPanel({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      aria-hidden={!active}
+      className={cn(
+        "absolute inset-0 flex min-h-0 flex-col transition-all duration-300 ease-out",
+        active ? "translate-x-0 opacity-100" : "pointer-events-none translate-x-4 opacity-0",
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 function QuickActionCard({
   icon: Icon,
   title,
@@ -235,6 +256,8 @@ export default function SubjectWorkspace() {
     toggleFormula,
     attachedImage,
     setAttachedImage,
+    chatVisible,
+    toggleChat,
     handleTeach,
     handleQuizAnswer,
     handleFormulaInsert,
@@ -448,6 +471,11 @@ export default function SubjectWorkspace() {
                   label={shareState === "copied" ? "Скопировано" : "Поделиться"}
                   onClick={handleShare}
                 />
+                <ToolbarButton
+                  icon={chatVisible ? ChevronRight : ChevronLeft}
+                  label={chatVisible ? "Скрыть панель" : "Открыть панель"}
+                  onClick={toggleChat}
+                />
                 <button
                   type="button"
                   className="grid h-10 w-10 place-items-center rounded-[16px] border border-[#ece7dd] bg-white text-[#324768] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
@@ -522,260 +550,301 @@ export default function SubjectWorkspace() {
             </div>
           </section>
 
-          <aside className="sticky top-4 hidden h-[calc(100vh-144px)] w-[340px] shrink-0 overflow-hidden rounded-[24px] border border-[#ebe6dc] bg-white shadow-[0_18px_40px_rgba(15,23,42,0.03)] xl:flex xl:flex-col">
-            <div className="border-b border-[#ece7dd]">
-              <div className="flex items-center px-3">
-                <SideTab active={activeTab === "ai"} label="AI-репетитор" onClick={() => setActiveTab("ai")} />
-                <SideTab active={activeTab === "materials"} label="Материалы" onClick={() => setActiveTab("materials")} />
-                <SideTab active={activeTab === "steps"} label="Шаги" onClick={() => setActiveTab("steps")} />
-              </div>
-            </div>
-
-            {activeTab === "ai" && (
-              <div className="flex min-h-0 flex-1 flex-col">
-                <div className="flex-1 space-y-3 overflow-y-auto p-4">
-                  <div className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-full bg-[#eef1f6]" />
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <SkeletonLine className="w-24" />
-                        <SkeletonLine className="w-40" />
-                      </div>
+          <div
+            className={cn(
+              "relative hidden shrink-0 transition-[width] duration-300 ease-out xl:block",
+              chatVisible ? "w-[340px]" : "w-[46px]",
+            )}
+          >
+            <aside
+              className={cn(
+                "sticky top-4 flex h-[calc(100vh-144px)] overflow-hidden rounded-[24px] bg-white transition-all duration-300 ease-out",
+                chatVisible
+                  ? "w-[340px] translate-x-0 border border-[#ebe6dc] opacity-100 shadow-[0_18px_40px_rgba(15,23,42,0.03)]"
+                  : "w-0 translate-x-8 border border-transparent opacity-0 shadow-none",
+              )}
+            >
+              <div className="flex min-w-[340px] flex-1 flex-col">
+                <div className="border-b border-[#ece7dd]">
+                  <div className="flex items-center gap-2 px-3">
+                    <div className="flex min-w-0 flex-1 items-center">
+                      <SideTab active={activeTab === "ai"} label="AI-репетитор" onClick={() => setActiveTab("ai")} />
+                      <SideTab active={activeTab === "materials"} label="Материалы" onClick={() => setActiveTab("materials")} />
+                      <SideTab active={activeTab === "steps"} label="Шаги" onClick={() => setActiveTab("steps")} />
                     </div>
+                    <button
+                      type="button"
+                      onClick={toggleChat}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] text-[#7e8cad] transition hover:bg-[#f6f8fc] hover:text-[#175cdf]"
+                      aria-label="Скрыть боковую панель"
+                    >
+                      <ChevronRight className="h-4 w-4" strokeWidth={1.9} />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="min-h-[104px] rounded-[18px] border border-[#ece7dd] bg-white p-4">
-                    {activeResult ? (
-                      <div>
-                        <p className="text-[14px] font-semibold text-[#132b5b]">
-                          {activeResult.title || `${subject.name}: рабочая сессия`}
-                        </p>
-                        <p className="mt-2 text-[13px] leading-6 text-[#7282a0]">
-                          {activeResult.summary}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3 pt-1">
-                        <SkeletonLine className="w-4/5" />
-                        <SkeletonLine className="w-3/4" />
-                        <SkeletonLine className="w-2/3" />
-                      </div>
-                    )}
-                  </div>
-
-                  <QuickActionCard
-                    icon={Sparkles}
-                    title="Коротко объяснить тему"
-                    tone="blue"
-                    onClick={() => void handleTeach(`Коротко объясни тему ${activeResult?.title || subject.name}`)}
-                  />
-                  <QuickActionCard
-                    icon={BookOpen}
-                    title="Показать пример или разбор"
-                    tone="green"
-                    onClick={handleExampleRequest}
-                  />
-                  <QuickActionCard
-                    icon={ClipboardCheck}
-                    title="Собрать тест по теме"
-                    tone="violet"
-                    onClick={handleCreateTest}
-                  />
-
-                  <div className="rounded-[18px] border border-[#ece7dd] bg-white p-3">
-                    <div className="space-y-0.5">
-                      {(recentMessages.length > 0 ? recentMessages.slice(0, 4) : Array.from({ length: 4 })).map((message, index) => {
-                        const tones = [
-                          "bg-[#ffd9d2]",
-                          "bg-[#d8e4ff]",
-                          "bg-[#eadcff]",
-                          "bg-[#d9f0d9]",
-                        ];
-
-                        const content = typeof message === "object" && "id" in message
-                          ? (message.role === "assistant" ? message.result?.summary || message.content : message.content)
-                          : "";
-
-                        return (
-                          <div
-                            key={typeof message === "object" && "id" in message ? message.id : `placeholder-${index}`}
-                            className="flex items-center gap-3 rounded-[14px] px-2 py-2.5 transition hover:bg-[#fcfbf8]"
-                          >
-                            <span className={cn("h-5 w-5 shrink-0 rounded-[6px]", tones[index % tones.length])} />
-                            <div className="min-w-0 flex-1">
-                              {content ? (
-                                <p className="line-clamp-1 text-[12px] text-[#7282a0]">{content}</p>
-                              ) : (
-                                <div className="space-y-2">
-                                  <SkeletonLine className="w-4/5" />
-                                  <SkeletonLine className="w-2/3" />
-                                </div>
-                              )}
+                <div className="relative flex-1 overflow-hidden">
+                  <WorkspaceTabPanel active={activeTab === "ai"}>
+                    <div className="flex min-h-0 flex-1 flex-col animate-surface-enter">
+                      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+                        <div className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-full bg-[#eef1f6]" />
+                            <div className="min-w-0 flex-1 space-y-2">
+                              <SkeletonLine className="w-24" />
+                              <SkeletonLine className="w-40" />
                             </div>
-                            <MoreHorizontal className="h-4 w-4 shrink-0 text-[#8a97b2]" strokeWidth={1.8} />
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {activeResult?.checkUnderstanding?.length ? (
-                    <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
-                      <div className="mb-3 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
-                          <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={toggleVoice}
-                          className="inline-flex h-8 items-center gap-1.5 rounded-[12px] border border-[#ece7dd] bg-[#fcfbf8] px-2.5 text-[11px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
-                        >
-                          {voiceEnabled ? <Volume2 className="h-3.5 w-3.5" strokeWidth={1.8} /> : <VolumeX className="h-3.5 w-3.5" strokeWidth={1.8} />}
-                          {voiceEnabled ? "Озвучка" : "Без звука"}
-                        </button>
-                      </div>
-                      <QuizSection
-                        questions={activeResult.checkUnderstanding}
-                        onAnswer={handleQuizAnswer}
-                        quizFeedback={quizFeedback}
-                        loadingQuestion={loadingQuestion}
-                      />
-                    </div>
-                  ) : (
-                    <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
-                      <div className="mb-2 flex items-center gap-2">
-                        <MessageSquare className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
-                        <p className="text-[14px] font-semibold text-[#132b5b]">AI-репетитор</p>
-                      </div>
-                      <p className="text-[12px] leading-6 text-[#7282a0]">
-                        Задай вопрос ниже, и доска заполнится шагами, формулами и пояснениями по теме.
-                      </p>
-                    </div>
-                  )}
-                </div>
 
-                <div className="border-t border-[#ece7dd] bg-[#fcfbf7] p-4">
-                  {showFormula && (
-                    <div className="mb-3 rounded-[18px] border border-[#ece7dd] bg-white p-3">
-                      <FormulaInput onInsert={handleFormulaInsert} />
-                    </div>
-                  )}
-
-                  <PromptInput
-                    prompt={prompt}
-                    setPrompt={setPrompt}
-                    onSubmit={() => {
-                      void handleTeach();
-                    }}
-                    loading={loading}
-                    attachedImage={attachedImage}
-                    onAttachImage={setAttachedImage}
-                  />
-
-                  {error && (
-                    <div className="mt-3 rounded-[16px] border border-[#f5d4d4] bg-[#fff5f5] px-3 py-2 text-[12px] text-[#c25555]">
-                      {error}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "materials" && (
-              <div className="flex min-h-0 flex-1 flex-col">
-                <div className="border-b border-[#ece7dd] px-4 py-3">
-                  <p className="text-[14px] font-semibold text-[#132b5b]">Материалы по предмету</p>
-                  <p className="mt-1 text-[12px] text-[#8a97b2]">База знаний AI-репетитора для этой доски</p>
-                </div>
-                <div className="flex-1 space-y-3 overflow-y-auto p-4">
-                  {filteredKnowledgeItems.length === 0 ? (
-                    <div className="rounded-[18px] border border-dashed border-[#e3dccf] bg-[#fcfbf8] px-4 py-5 text-[13px] leading-6 text-[#7282a0]">
-                      Пока нет сохранённых материалов. Добавь теорию или заметки на странице материалов, и они будут участвовать в объяснении.
-                    </div>
-                  ) : (
-                    filteredKnowledgeItems.map((item) => (
-                      <div key={item.id} className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
-                        <p className="text-[14px] font-semibold text-[#132b5b]">{item.title}</p>
-                        <p className="mt-2 line-clamp-4 text-[12px] leading-6 text-[#7282a0]">{item.content}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "steps" && (
-              <div className="flex min-h-0 flex-1 flex-col">
-                <div className="border-b border-[#ece7dd] px-4 py-3">
-                  <p className="text-[14px] font-semibold text-[#132b5b]">Пошаговое решение</p>
-                  <p className="mt-1 text-[12px] text-[#8a97b2]">Структура ответа и контрольные вопросы</p>
-                </div>
-
-                <div className="flex-1 space-y-3 overflow-y-auto p-4">
-                  {filteredSteps.length === 0 ? (
-                    <div className="rounded-[18px] border border-dashed border-[#e3dccf] bg-[#fcfbf8] px-4 py-5 text-[13px] leading-6 text-[#7282a0]">
-                      Пока шагов нет. Запроси объяснение темы, и AI разложит решение по этапам.
-                    </div>
-                  ) : (
-                    filteredSteps.map((step, index) => {
-                      const isActive = isSpeaking && currentStepIndex === index;
-                      const isPast = !isSpeaking || currentStepIndex === -1 || index <= currentStepIndex;
-
-                      return (
-                        <div
-                          key={`${step}-${index}`}
-                          className={cn(
-                            "rounded-[18px] border px-4 py-3 transition",
-                            isActive
-                              ? "border-[#d8e4ff] bg-[#eef4ff]"
-                              : isPast
-                                ? "border-[#ece7dd] bg-[#fcfbf8]"
-                                : "border-[#f1ece3] bg-[#fcfbf8]/70 opacity-60",
+                        <div className="min-h-[104px] rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                          {activeResult ? (
+                            <div>
+                              <p className="text-[14px] font-semibold text-[#132b5b]">
+                                {activeResult.title || `${subject.name}: рабочая сессия`}
+                              </p>
+                              <p className="mt-2 text-[13px] leading-6 text-[#7282a0]">
+                                {activeResult.summary}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3 pt-1">
+                              <SkeletonLine className="w-4/5" />
+                              <SkeletonLine className="w-3/4" />
+                              <SkeletonLine className="w-2/3" />
+                            </div>
                           )}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={cn(
-                              "grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-semibold",
-                              isActive ? "bg-[#2563eb] text-white" : "bg-white text-[#2563eb] border border-[#d8e4ff]",
-                            )}>
-                              {index + 1}
-                            </div>
-                            <p className="text-[13px] leading-6 text-[#42557a]">{step}</p>
+                        </div>
+
+                        <QuickActionCard
+                          icon={Sparkles}
+                          title="Коротко объяснить тему"
+                          tone="blue"
+                          onClick={() => void handleTeach(`Коротко объясни тему ${activeResult?.title || subject.name}`)}
+                        />
+                        <QuickActionCard
+                          icon={BookOpen}
+                          title="Показать пример или разбор"
+                          tone="green"
+                          onClick={handleExampleRequest}
+                        />
+                        <QuickActionCard
+                          icon={ClipboardCheck}
+                          title="Собрать тест по теме"
+                          tone="violet"
+                          onClick={handleCreateTest}
+                        />
+
+                        <div className="rounded-[18px] border border-[#ece7dd] bg-white p-3">
+                          <div className="space-y-0.5">
+                            {(recentMessages.length > 0 ? recentMessages.slice(0, 4) : Array.from({ length: 4 })).map((message, index) => {
+                              const tones = [
+                                "bg-[#ffd9d2]",
+                                "bg-[#d8e4ff]",
+                                "bg-[#eadcff]",
+                                "bg-[#d9f0d9]",
+                              ];
+
+                              const content = typeof message === "object" && "id" in message
+                                ? (message.role === "assistant" ? message.result?.summary || message.content : message.content)
+                                : "";
+
+                              return (
+                                <div
+                                  key={typeof message === "object" && "id" in message ? message.id : `placeholder-${index}`}
+                                  className="flex items-center gap-3 rounded-[14px] px-2 py-2.5 transition hover:bg-[#fcfbf8]"
+                                >
+                                  <span className={cn("h-5 w-5 shrink-0 rounded-[6px]", tones[index % tones.length])} />
+                                  <div className="min-w-0 flex-1">
+                                    {content ? (
+                                      <p className="line-clamp-1 text-[12px] text-[#7282a0]">{content}</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <SkeletonLine className="w-4/5" />
+                                        <SkeletonLine className="w-2/3" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <MoreHorizontal className="h-4 w-4 shrink-0 text-[#8a97b2]" strokeWidth={1.8} />
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                      );
-                    })
-                  )}
 
-                  {activeResult?.checkUnderstanding?.length ? (
-                    <div className="rounded-[20px] border border-[#ece7dd] bg-white p-4">
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
-                          <p className="mt-1 text-[12px] text-[#8a97b2]">Ответь на короткие вопросы по теме</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleCreateTest}
-                          className="inline-flex h-9 items-center gap-2 rounded-[14px] border border-[#d8e4ff] bg-[#eef4ff] px-3 text-[12px] font-semibold text-[#2563eb]"
-                        >
-                          <ClipboardCheck className="h-4 w-4" strokeWidth={1.8} />
-                          Тест
-                        </button>
+                        {activeResult?.checkUnderstanding?.length ? (
+                          <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
+                                <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={toggleVoice}
+                                className="inline-flex h-8 items-center gap-1.5 rounded-[12px] border border-[#ece7dd] bg-[#fcfbf8] px-2.5 text-[11px] font-medium text-[#5d7095] transition hover:text-[#2563eb]"
+                              >
+                                {voiceEnabled ? <Volume2 className="h-3.5 w-3.5" strokeWidth={1.8} /> : <VolumeX className="h-3.5 w-3.5" strokeWidth={1.8} />}
+                                {voiceEnabled ? "Озвучка" : "Без звука"}
+                              </button>
+                            </div>
+                            <QuizSection
+                              questions={activeResult.checkUnderstanding}
+                              onAnswer={handleQuizAnswer}
+                              quizFeedback={quizFeedback}
+                              loadingQuestion={loadingQuestion}
+                            />
+                          </div>
+                        ) : (
+                          <div className="rounded-[18px] border border-[#ece7dd] bg-white p-4">
+                            <div className="mb-2 flex items-center gap-2">
+                              <MessageSquare className="h-4.5 w-4.5 text-[#2563eb]" strokeWidth={1.8} />
+                              <p className="text-[14px] font-semibold text-[#132b5b]">AI-репетитор</p>
+                            </div>
+                            <p className="text-[12px] leading-6 text-[#7282a0]">
+                              Задай вопрос ниже, и доска заполнится шагами, формулами и пояснениями по теме.
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <QuizSection
-                        questions={activeResult.checkUnderstanding}
-                        onAnswer={handleQuizAnswer}
-                        quizFeedback={quizFeedback}
-                        loadingQuestion={loadingQuestion}
-                      />
+
+                      <div className="border-t border-[#ece7dd] bg-[#fcfbf7] p-4">
+                        {showFormula && (
+                          <div className="mb-3 rounded-[18px] border border-[#ece7dd] bg-white p-3">
+                            <FormulaInput onInsert={handleFormulaInsert} />
+                          </div>
+                        )}
+
+                        <PromptInput
+                          prompt={prompt}
+                          setPrompt={setPrompt}
+                          onSubmit={() => {
+                            void handleTeach();
+                          }}
+                          loading={loading}
+                          attachedImage={attachedImage}
+                          onAttachImage={setAttachedImage}
+                        />
+
+                        {error && (
+                          <div className="mt-3 rounded-[16px] border border-[#f5d4d4] bg-[#fff5f5] px-3 py-2 text-[12px] text-[#c25555]">
+                            {error}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ) : null}
+                  </WorkspaceTabPanel>
+
+                  <WorkspaceTabPanel active={activeTab === "materials"}>
+                    <div className="flex min-h-0 flex-1 flex-col animate-surface-enter">
+                      <div className="border-b border-[#ece7dd] px-4 py-3">
+                        <p className="text-[14px] font-semibold text-[#132b5b]">Материалы по предмету</p>
+                        <p className="mt-1 text-[12px] text-[#8a97b2]">База знаний AI-репетитора для этой доски</p>
+                      </div>
+                      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+                        {filteredKnowledgeItems.length === 0 ? (
+                          <div className="rounded-[18px] border border-dashed border-[#e3dccf] bg-[#fcfbf8] px-4 py-5 text-[13px] leading-6 text-[#7282a0]">
+                            Пока нет сохранённых материалов. Добавь теорию или заметки на странице материалов, и они будут участвовать в объяснении.
+                          </div>
+                        ) : (
+                          filteredKnowledgeItems.map((item) => (
+                            <div key={item.id} className="rounded-[18px] border border-[#ece7dd] bg-[#fcfbf8] px-4 py-3">
+                              <p className="text-[14px] font-semibold text-[#132b5b]">{item.title}</p>
+                              <p className="mt-2 line-clamp-4 text-[12px] leading-6 text-[#7282a0]">{item.content}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </WorkspaceTabPanel>
+
+                  <WorkspaceTabPanel active={activeTab === "steps"}>
+                    <div className="flex min-h-0 flex-1 flex-col animate-surface-enter">
+                      <div className="border-b border-[#ece7dd] px-4 py-3">
+                        <p className="text-[14px] font-semibold text-[#132b5b]">Пошаговое решение</p>
+                        <p className="mt-1 text-[12px] text-[#8a97b2]">Структура ответа и контрольные вопросы</p>
+                      </div>
+
+                      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+                        {filteredSteps.length === 0 ? (
+                          <div className="rounded-[18px] border border-dashed border-[#e3dccf] bg-[#fcfbf8] px-4 py-5 text-[13px] leading-6 text-[#7282a0]">
+                            Пока шагов нет. Запроси объяснение темы, и AI разложит решение по этапам.
+                          </div>
+                        ) : (
+                          filteredSteps.map((step, index) => {
+                            const isActive = isSpeaking && currentStepIndex === index;
+                            const isPast = !isSpeaking || currentStepIndex === -1 || index <= currentStepIndex;
+
+                            return (
+                              <div
+                                key={`${step}-${index}`}
+                                className={cn(
+                                  "rounded-[18px] border px-4 py-3 transition",
+                                  isActive
+                                    ? "border-[#d8e4ff] bg-[#eef4ff]"
+                                    : isPast
+                                      ? "border-[#ece7dd] bg-[#fcfbf8]"
+                                      : "border-[#f1ece3] bg-[#fcfbf8]/70 opacity-60",
+                                )}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={cn(
+                                    "grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-semibold",
+                                    isActive ? "bg-[#2563eb] text-white" : "bg-white text-[#2563eb] border border-[#d8e4ff]",
+                                  )}>
+                                    {index + 1}
+                                  </div>
+                                  <p className="text-[13px] leading-6 text-[#42557a]">{step}</p>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+
+                        {activeResult?.checkUnderstanding?.length ? (
+                          <div className="rounded-[20px] border border-[#ece7dd] bg-white p-4">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[14px] font-semibold text-[#132b5b]">Проверка понимания</p>
+                                <p className="mt-1 text-[12px] text-[#8a97b2]">Ответь на короткие вопросы по теме</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={handleCreateTest}
+                                className="inline-flex h-9 items-center gap-2 rounded-[14px] border border-[#d8e4ff] bg-[#eef4ff] px-3 text-[12px] font-semibold text-[#2563eb]"
+                              >
+                                <ClipboardCheck className="h-4 w-4" strokeWidth={1.8} />
+                                Тест
+                              </button>
+                            </div>
+                            <QuizSection
+                              questions={activeResult.checkUnderstanding}
+                              onAnswer={handleQuizAnswer}
+                              quizFeedback={quizFeedback}
+                              loadingQuestion={loadingQuestion}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </WorkspaceTabPanel>
                 </div>
               </div>
-            )}
-          </aside>
+            </aside>
+
+            <button
+              type="button"
+              onClick={toggleChat}
+              className={cn(
+                "absolute right-0 top-4 z-10 flex items-center gap-2 rounded-l-[18px] border border-[#e6dfd3] bg-white px-3 py-2 text-[12px] font-semibold text-[#415276] shadow-[0_14px_28px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-[#d8e2fb] hover:text-[#175cdf]",
+                chatVisible ? "pointer-events-none translate-x-4 opacity-0" : "translate-x-0 opacity-100",
+              )}
+              aria-label="Открыть боковую панель"
+            >
+              <ChevronLeft className="h-4 w-4" strokeWidth={1.9} />
+              <span>Помощник</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

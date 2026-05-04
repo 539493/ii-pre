@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   CheckCircle2,
@@ -18,24 +18,17 @@ import {
   MiniDocumentIllustration,
   ScoreIllustration,
 } from "@/components/dashboard/DashboardIllustrations";
+import { buildMistakeNotebook, buildWeakTopicInsights } from "@/lib/learning-insights";
 import { getAllSubjects, getSuggestedSubjectName, suggestSubjectAppearance } from "@/lib/subjects";
+import { getOrCreateDeviceId } from "@/lib/tutor-session";
 import {
   buildSubjectStats,
   buildTopicSummaries,
   getGradeLabel,
   getStudyTimeLabel,
 } from "@/lib/progress-utils";
-import { fetchProgressRecords } from "@/services/tutorData";
-import type { ProgressRecord } from "@/types/tutor";
-
-function formatShortDate(value: string | null) {
-  if (!value) return "—";
-
-  return new Date(value).toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "short",
-  });
-}
+import { fetchProgressRecords, fetchUserTests } from "@/services/tutorData";
+import type { ProgressRecord, UserTest } from "@/types/tutor";
 
 function EmptyAnalyticsCard({
   title,
@@ -62,23 +55,34 @@ function EmptyAnalyticsCard({
 
 export default function ProgressPage() {
   const navigate = useNavigate();
+  const deviceId = useMemo(() => getOrCreateDeviceId(), []);
   const [records, setRecords] = useState<ProgressRecord[]>([]);
+  const [tests, setTests] = useState<UserTest[]>([]);
   const subjects = getAllSubjects();
+
+  const loadProgress = useCallback(async () => {
+    try {
+      const [progressRecords, userTests] = await Promise.all([
+        fetchProgressRecords(deviceId),
+        fetchUserTests(deviceId),
+      ]);
+      setRecords(progressRecords);
+      setTests(userTests);
+    } catch {
+      setRecords([]);
+      setTests([]);
+    }
+  }, [deviceId]);
 
   useEffect(() => {
     void loadProgress();
-  }, []);
-
-  async function loadProgress() {
-    try {
-      setRecords(await fetchProgressRecords());
-    } catch {
-      setRecords([]);
-    }
-  }
+  }, [loadProgress]);
 
   const topicSummaries = useMemo(() => buildTopicSummaries(records), [records]);
   const subjectStats = useMemo(() => buildSubjectStats(subjects, topicSummaries), [subjects, topicSummaries]);
+  const weakTopics = useMemo(() => buildWeakTopicInsights(records, tests, subjects), [records, tests, subjects]);
+  const repeatTopics = useMemo(() => weakTopics.filter((item) => item.confidence !== "strong"), [weakTopics]);
+  const mistakes = useMemo(() => buildMistakeNotebook(tests, subjects), [tests, subjects]);
   const activeSubjects = subjectStats.filter((item) => item.topicCount > 0);
   const totalQuestions = topicSummaries.reduce((sum, item) => sum + item.totalQuestions, 0);
   const totalCorrect = topicSummaries.reduce((sum, item) => sum + item.correctAnswers, 0);
@@ -86,8 +90,6 @@ export default function ProgressPage() {
   const completionPercent = topicSummaries.length > 0
     ? Math.round((topicSummaries.filter((item) => item.score >= 70).length / topicSummaries.length) * 100)
     : 0;
-  const latestUpdate = topicSummaries[0]?.lastStudied ?? null;
-
   return (
     <DashboardShell
       title="Успеваемость"
@@ -95,8 +97,8 @@ export default function ProgressPage() {
       overviewItems={[
         { label: "Всего", value: records.length, tone: "blue" },
         { label: "Активно", value: activeSubjects.length, tone: "blue" },
-        { label: "Завершено", value: topicSummaries.filter((item) => item.score >= 70).length, tone: "amber" },
-        { label: "Обновлено", value: formatShortDate(latestUpdate), tone: "slate" },
+        { label: "На повторе", value: repeatTopics.length, tone: "amber" },
+        { label: "Ошибки", value: mistakes.filter((item) => !item.corrected).length, tone: "slate" },
       ]}
       quickActions={[
         { label: "Добавить", icon: ClipboardCheck, onClick: () => navigate("/tests") },
@@ -192,6 +194,57 @@ export default function ProgressPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+          {repeatTopics.length > 0 && (
+            <DashboardPanel className="p-4">
+              <DashboardSectionTitle title="Темы для повторения" icon={Info} />
+              <div className="space-y-2.5">
+                {repeatTopics.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(`/subject/${item.subjectId}`)}
+                    className="w-full rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5 text-left transition hover:border-[#d7e2fb]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="line-clamp-1 text-[13px] font-medium text-[#223761]">
+                          {item.subjectIcon} {item.subjectName}
+                        </p>
+                        <p className="mt-1 line-clamp-1 text-[12px] text-[#6f7f9d]">{item.topic}</p>
+                      </div>
+                      <span className="text-[12px] font-semibold text-[#2563eb]">{item.score}%</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-[#8a97b2]">{item.confidenceLabel} • {item.activityLabel}</p>
+                  </button>
+                ))}
+              </div>
+            </DashboardPanel>
+          )}
+
+          {mistakes.length > 0 && (
+            <DashboardPanel className="p-4">
+              <DashboardSectionTitle title="Ошибки и трудные вопросы" icon={ClipboardCheck} />
+              <div className="space-y-2.5">
+                {mistakes.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate("/tests")}
+                    className="w-full rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5 text-left transition hover:border-[#d7e2fb]"
+                  >
+                    <p className="line-clamp-1 text-[13px] font-medium text-[#223761]">
+                      {item.subjectIcon} {item.subjectName} • {item.topic}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[#6f7f9d]">{item.question}</p>
+                    <p className="mt-1 text-[11px] text-[#8a97b2]">
+                      {item.corrected ? "Исправлено после повторения" : "Нужен повтор"} • попыток: {item.attempts}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </DashboardPanel>
+          )}
+
           <DashboardPanel className="p-4">
             <DashboardSectionTitle title="Прогресс по предметам" icon={BarChart3} />
             <div className="space-y-3.5">

@@ -19,13 +19,17 @@ const queryClient = new QueryClient();
 const AppLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="flex h-screen overflow-hidden bg-[#fbfaf7]">
     <AppSidebar />
-    <div className="flex-1 overflow-hidden">{children}</div>
+    <div className="flex-1 overflow-hidden">
+      <div className="h-full animate-route-enter">{children}</div>
+    </div>
   </div>
 );
 
 const PageFallback = () => (
-  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-    Загружаю страницу…
+  <div className="flex h-full items-center justify-center bg-[#fbfaf7] px-6">
+    <div className="animate-surface-enter rounded-[24px] border border-[#ebe6dc] bg-white px-6 py-4 text-sm text-[#7282a0] shadow-[0_18px_40px_rgba(15,23,42,0.04)]">
+      Загружаю страницу…
+    </div>
   </div>
 );
 

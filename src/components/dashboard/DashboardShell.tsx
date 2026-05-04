@@ -34,6 +34,8 @@ type DashboardShellProps = {
   quickActions?: DashboardQuickAction[];
   showQuickActions?: boolean;
   recentActivity?: ReactNode;
+  compactHeader?: boolean;
+  compactRail?: boolean;
   children: ReactNode;
 };
 
@@ -161,7 +163,8 @@ export function DashboardSectionTitle({
 
 function DashboardOverviewRail({
   overviewItems,
-}: Pick<DashboardShellProps, "overviewItems">) {
+  compactRail = false,
+}: Pick<DashboardShellProps, "overviewItems" | "compactRail">) {
   const [isStatsOpen, setIsStatsOpen] = useState(true);
   const todayLabel = new Intl.DateTimeFormat("ru-RU", {
     weekday: "long",
@@ -173,7 +176,7 @@ function DashboardOverviewRail({
     <aside
       className={cn(
         "relative self-start shrink-0 transition-[width] duration-300 ease-out xl:sticky xl:top-5",
-        isStatsOpen ? "w-full xl:w-[300px]" : "w-0",
+        isStatsOpen ? (compactRail ? "w-full xl:w-[262px]" : "w-full xl:w-[300px]") : "w-0",
       )}
     >
       <div
@@ -182,34 +185,47 @@ function DashboardOverviewRail({
           isStatsOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none",
         )}
       >
-        <DashboardPanel className="p-4">
-          <div className="mb-4 flex items-start justify-between gap-3">
+        <DashboardPanel className={cn(compactRail ? "p-3.5" : "p-4")}>
+          <div className={cn("flex items-start justify-between gap-3", compactRail ? "mb-3" : "mb-4")}>
             <div>
-              <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+              <h3 className={cn(
+                "font-serif font-semibold tracking-[-0.03em] text-[#132b5b]",
+                compactRail ? "text-[16px]" : "text-[18px]",
+              )}>
                 Недавняя активность
               </h3>
-              <p className="mt-1.5 text-[12px] text-[#7b89a5]">
+              <p className={cn("text-[#7b89a5]", compactRail ? "mt-1 text-[11px]" : "mt-1.5 text-[12px]")}>
                 Дневная статистика за {todayLabel}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setIsStatsOpen(false)}
-              className="grid h-8 w-8 place-items-center rounded-full text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#132b5b]"
+              className={cn(
+                "grid place-items-center rounded-full text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#132b5b]",
+                compactRail ? "h-7 w-7" : "h-8 w-8",
+              )}
               aria-label="Свернуть дневную статистику"
             >
               <ChevronRight className="h-4 w-4" strokeWidth={1.9} />
             </button>
           </div>
 
-          <div className="space-y-2.5">
+          <div className={cn(compactRail ? "space-y-2" : "space-y-2.5")}>
             {overviewItems.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-3"
+                className={cn(
+                  "rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8]",
+                  compactRail ? "px-3 py-2.5" : "px-3.5 py-3",
+                )}
               >
-                <p className="text-[12px] text-[#7b89a5]">{item.label}</p>
-                <p className={cn("mt-1.5 text-[16px] font-semibold", toneClasses[item.tone || "slate"])}>
+                <p className={cn("text-[#7b89a5]", compactRail ? "text-[11px]" : "text-[12px]")}>{item.label}</p>
+                <p className={cn(
+                  "font-semibold",
+                  compactRail ? "mt-1 text-[15px]" : "mt-1.5 text-[16px]",
+                  toneClasses[item.tone || "slate"],
+                )}>
                   {item.value}
                 </p>
               </div>
@@ -222,7 +238,8 @@ function DashboardOverviewRail({
         type="button"
         onClick={() => setIsStatsOpen(true)}
         className={cn(
-          "absolute right-0 top-6 z-10 flex items-center gap-2 rounded-l-[18px] border border-[#e6dfd3] bg-white px-3 py-2 text-[12px] font-semibold text-[#415276] shadow-[0_14px_28px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-[#d8e2fb] hover:text-[#175cdf]",
+          "absolute right-0 z-10 flex items-center rounded-l-[18px] border border-[#e6dfd3] bg-white font-semibold text-[#415276] shadow-[0_14px_28px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-[#d8e2fb] hover:text-[#175cdf]",
+          compactRail ? "top-5 gap-1.5 px-2.5 py-1.5 text-[11px]" : "top-6 gap-2 px-3 py-2 text-[12px]",
           isStatsOpen ? "pointer-events-none translate-x-3 opacity-0" : "translate-x-0 opacity-100",
         )}
         aria-label="Открыть дневную статистику"
@@ -240,29 +257,38 @@ export function DashboardEmptyHero({
   description,
   actions,
   className,
+  compact = false,
 }: {
   illustration: ReactNode;
   title: string;
   description: ReactNode;
   actions?: ReactNode;
   className?: string;
+  compact?: boolean;
 }) {
   return (
     <DashboardPanel
       className={cn(
-        "flex min-h-[340px] items-center justify-center px-6 py-8 text-center",
+        "flex items-center justify-center text-center",
+        compact ? "min-h-[280px] px-5 py-7" : "min-h-[340px] px-6 py-8",
         className,
       )}
     >
-      <div className="mx-auto max-w-[460px]">
+      <div className={cn("mx-auto", compact ? "max-w-[390px]" : "max-w-[460px]")}>
         <div className="mx-auto flex justify-center">{illustration}</div>
-        <h2 className="mt-5 font-serif text-[26px] font-semibold tracking-[-0.03em] text-[#132b5b] sm:text-[30px]">
+        <h2 className={cn(
+          "font-serif font-semibold tracking-[-0.03em] text-[#132b5b]",
+          compact ? "mt-3.5 text-[22px] sm:text-[24px]" : "mt-5 text-[26px] sm:text-[30px]",
+        )}>
           {title}
         </h2>
-        <div className="mx-auto mt-3 max-w-[420px] text-[14px] leading-6 text-[#6f7f9d]">
+        <div className={cn(
+          "mx-auto text-[#6f7f9d]",
+          compact ? "mt-2.5 max-w-[340px] text-[13px] leading-6" : "mt-3 max-w-[420px] text-[14px] leading-6",
+        )}>
           {description}
         </div>
-        {actions && <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">{actions}</div>}
+        {actions && <div className={cn("flex flex-wrap items-center justify-center gap-2.5", compact ? "mt-5" : "mt-6")}>{actions}</div>}
       </div>
     </DashboardPanel>
   );
@@ -276,9 +302,8 @@ export default function DashboardShell({
   searchPlaceholder,
   toolbar,
   overviewItems,
-  quickActions,
-  showQuickActions,
-  recentActivity,
+  compactHeader = false,
+  compactRail = false,
   children,
 }: DashboardShellProps) {
   return (
@@ -290,13 +315,26 @@ export default function DashboardShell({
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 xl:flex-row xl:items-start">
-          <div className="min-w-0 flex-1 space-y-5">
-            <header className="space-y-2">
-              <h1 className="font-serif text-[34px] font-semibold leading-none tracking-[-0.05em] text-[#132b5b] sm:text-[40px] lg:text-[48px]">
+        <div className={cn(
+          "mx-auto flex max-w-[1320px] flex-col px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start",
+          compactHeader ? "gap-5 py-4" : "gap-6 py-5",
+        )}>
+          <div className={cn("min-w-0 flex-1", compactHeader ? "space-y-4" : "space-y-5")}>
+            <header className={cn(compactHeader ? "space-y-1.5" : "space-y-2")}>
+              <h1 className={cn(
+                "font-serif font-semibold tracking-[-0.05em] text-[#132b5b]",
+                compactHeader
+                  ? "text-[26px] leading-[0.95] sm:text-[30px] lg:text-[34px]"
+                  : "text-[34px] leading-none sm:text-[40px] lg:text-[48px]",
+              )}>
                 {title}
               </h1>
-              <p className="max-w-[680px] text-[14px] leading-6 text-[#7282a0] sm:text-[15px]">
+              <p className={cn(
+                "text-[#7282a0]",
+                compactHeader
+                  ? "max-w-[560px] text-[13px] leading-5 sm:text-[14px]"
+                  : "max-w-[680px] text-[14px] leading-6 sm:text-[15px]",
+              )}>
                 {description}
               </p>
             </header>
@@ -307,9 +345,7 @@ export default function DashboardShell({
 
           <DashboardOverviewRail
             overviewItems={overviewItems}
-            quickActions={quickActions}
-            showQuickActions={showQuickActions}
-            recentActivity={recentActivity}
+            compactRail={compactRail}
           />
         </div>
       </div>
