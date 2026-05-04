@@ -1,14 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Bell,
+  ChevronLeft,
   ChevronDown,
   ChevronRight,
   CircleHelp,
-  Clock3,
-  Info,
   Search,
   SunMedium,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -163,37 +161,52 @@ export function DashboardSectionTitle({
 
 function DashboardOverviewRail({
   overviewItems,
-  quickActions = [],
-  showQuickActions = false,
-  recentActivity,
-}: Pick<DashboardShellProps, "overviewItems" | "quickActions" | "showQuickActions" | "recentActivity">) {
-  const [isOverviewVisible, setIsOverviewVisible] = useState(true);
+}: Pick<DashboardShellProps, "overviewItems">) {
+  const [isStatsOpen, setIsStatsOpen] = useState(true);
+  const todayLabel = new Intl.DateTimeFormat("ru-RU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
 
   return (
-    <aside className="w-full shrink-0 space-y-3.5 xl:sticky xl:top-5 xl:w-[300px]">
-      {isOverviewVisible ? (
+    <aside
+      className={cn(
+        "relative self-start shrink-0 transition-[width] duration-300 ease-out xl:sticky xl:top-5",
+        isStatsOpen ? "w-full xl:w-[300px]" : "w-0",
+      )}
+    >
+      <div
+        className={cn(
+          "transition-all duration-300 ease-out",
+          isStatsOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none",
+        )}
+      >
         <DashboardPanel className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
-              Обзор
-            </h3>
-            <div className="flex items-center gap-1.5">
-              <Info className="h-4.5 w-4.5 text-[#8a97b2]" strokeWidth={1.8} />
-              <button
-                type="button"
-                onClick={() => setIsOverviewVisible(false)}
-                className="grid h-8 w-8 place-items-center rounded-full text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#132b5b]"
-                aria-label="Скрыть обзор"
-              >
-                <X className="h-4 w-4" strokeWidth={1.9} />
-              </button>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
+                Недавняя активность
+              </h3>
+              <p className="mt-1.5 text-[12px] text-[#7b89a5]">
+                Дневная статистика за {todayLabel}
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsStatsOpen(false)}
+              className="grid h-8 w-8 place-items-center rounded-full text-[#8a97b2] transition hover:bg-[#f5f7fb] hover:text-[#132b5b]"
+              aria-label="Свернуть дневную статистику"
+            >
+              <ChevronRight className="h-4 w-4" strokeWidth={1.9} />
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-2.5">
+
+          <div className="space-y-2.5">
             {overviewItems.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-3"
+                className="rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-3"
               >
                 <p className="text-[12px] text-[#7b89a5]">{item.label}</p>
                 <p className={cn("mt-1.5 text-[16px] font-semibold", toneClasses[item.tone || "slate"])}>
@@ -203,57 +216,20 @@ function DashboardOverviewRail({
             ))}
           </div>
         </DashboardPanel>
-      ) : (
-        <DashboardPanel className="p-3">
-          <button
-            type="button"
-            onClick={() => setIsOverviewVisible(true)}
-            className="flex w-full items-center justify-center rounded-[16px] border border-[#ece7dd] bg-[#fcfbf8] px-3.5 py-2.5 text-[13px] font-medium text-[#415276] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
-          >
-            Показать обзор
-          </button>
-        </DashboardPanel>
-      )}
+      </div>
 
-      {showQuickActions && quickActions.length > 0 && (
-        <DashboardPanel className="p-4">
-          <h3 className="mb-3 font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
-            Быстрые действия
-          </h3>
-          <div className="space-y-2.5">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-
-              return (
-                <button
-                  key={action.label}
-                  type="button"
-                  onClick={action.onClick}
-                  className="flex w-full items-center gap-3 rounded-[16px] border border-[#ece7dd] bg-white px-3.5 py-2.5 text-left text-[14px] font-medium text-[#415276] transition hover:border-[#d8e2fb] hover:text-[#175cdf]"
-                >
-                  <Icon className="h-4.5 w-4.5 shrink-0 text-[#7f8eab]" strokeWidth={1.8} />
-                  <span className="flex-1">{action.label}</span>
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a4bb]" strokeWidth={1.8} />
-                </button>
-              );
-            })}
-          </div>
-        </DashboardPanel>
-      )}
-
-      <DashboardPanel className="p-4">
-        <h3 className="mb-3 font-serif text-[18px] font-semibold tracking-[-0.03em] text-[#132b5b]">
-          Недавняя активность
-        </h3>
-        {recentActivity || (
-          <div className="flex min-h-[154px] flex-col items-center justify-center text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-full border border-[#dde5f3] bg-[#f7f9fd] text-[#8a97b2] shadow-[inset_0_0_0_8px_rgba(255,255,255,0.95)]">
-              <Clock3 className="h-6 w-6" strokeWidth={1.7} />
-            </div>
-            <p className="mt-4 text-[13px] text-[#7b89a5]">Пока нет активности</p>
-          </div>
+      <button
+        type="button"
+        onClick={() => setIsStatsOpen(true)}
+        className={cn(
+          "absolute right-0 top-6 z-10 flex items-center gap-2 rounded-l-[18px] border border-[#e6dfd3] bg-white px-3 py-2 text-[12px] font-semibold text-[#415276] shadow-[0_14px_28px_rgba(15,23,42,0.06)] transition-all duration-300 hover:border-[#d8e2fb] hover:text-[#175cdf]",
+          isStatsOpen ? "pointer-events-none translate-x-3 opacity-0" : "translate-x-0 opacity-100",
         )}
-      </DashboardPanel>
+        aria-label="Открыть дневную статистику"
+      >
+        <ChevronLeft className="h-4 w-4" strokeWidth={1.9} />
+        <span>Статистика</span>
+      </button>
     </aside>
   );
 }
